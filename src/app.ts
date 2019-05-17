@@ -1,21 +1,48 @@
 import * as fs from "fs";
 import chokidar from "chokidar";
+import socketio from "socket.io";
 
-let watchDir = `/home/slava/ftp`;
+import { PathHelper, ReportItem } from "./PathHelper";
+
+let watchDir = `C:\\Users\\bezga\\ftp\\AgentPlus`;
 
 // If /home/slava/ftp doesn't exist, use the current dir
 try {
-  fs.accessSync(`/home/slava/ftp`, fs.constants.F_OK);
+  fs.accessSync(watchDir, fs.constants.F_OK);
 } catch (e) {
-  watchDir = `./`;
+  watchDir = `./AgentPlus`;
 }
 
 console.log(`Application started! Watching directory ${watchDir}`);
 
-const watcher = chokidar.watch(watchDir);
+let allReports: ReportItem[] = [];
 
-const log = console.log.bind(console);
+const io = socketio(5000);
 
-watcher.on("add", path => log(`File ${path} added`));
-watcher.on("change", path => log(`File ${path} changed`));
-watcher.on("unlink", path => log(`File ${path} deleted`));
+io.on("connection", socket => {
+  // Initial connection
+
+  // Start the file watcher
+  const watcher = chokidar.watch(watchDir);
+
+  watcher.on("add", path => {
+    const processed = PathHelper.convert(path);
+    if (processed.type !== 3) allReports.push(processed);
+    console.log(`File ${path} added, now ${allReports.length} files`);
+    socket.emit("report_added", processed);
+  });
+
+  watcher.on("unlink", path => {
+    // Remove file from
+    const processed = PathHelper.convert(path, true);
+    allReports = allReports.filter(r => {
+      return !(r.type === processed.type && r.name === processed.name);
+    });
+    console.log(`File ${path} removed, now ${allReports.length} files`);
+    socket.emit("report_removed", processed);
+  });
+
+  socket.on("list_reports", () => {
+    socket.emit("all_reports", allReports);
+  });
+});

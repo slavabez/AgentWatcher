@@ -4,7 +4,7 @@ import socketio from "socket.io";
 
 import { PathHelper, ReportItem } from "./PathHelper";
 
-let watchDir = `C:\\Users\\bezga\\ftp\\AgentPlus`;
+let watchDir = require("../package.json").watchDirectory;
 
 // If /home/slava/ftp doesn't exist, use the current dir
 try {
@@ -18,16 +18,16 @@ console.log(`Application started! Watching directory ${watchDir}`);
 let allReports: ReportItem[] = [];
 
 const io = socketio(5000);
+// Start the file watcher
+const watcher = chokidar.watch(watchDir);
 
 io.on("connection", socket => {
   // Initial connection
 
-  // Start the file watcher
-  const watcher = chokidar.watch(watchDir);
-
   watcher.on("add", path => {
     const processed = PathHelper.convert(path);
-    if (processed.type !== 3) allReports.push(processed);
+    if (processed.type === 1 || processed.type === 2)
+      allReports.push(processed);
     console.log(`File ${path} added, now ${allReports.length} files`);
     socket.emit("report_added", processed);
   });

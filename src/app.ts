@@ -6,7 +6,6 @@ import { PathHelper, ReportItem } from "./PathHelper";
 
 let watchDir = require("../package.json").watchDirectory;
 
-// If /home/slava/ftp doesn't exist, use the current dir
 try {
   fs.accessSync(watchDir, fs.constants.F_OK);
 } catch (e) {
@@ -25,11 +24,18 @@ io.on("connection", socket => {
   // Initial connection
 
   watcher.on("add", path => {
-    const processed = PathHelper.convert(path);
-    if (processed.type === 1 || processed.type === 2)
-      allReports.push(processed);
+    const p = PathHelper.convert(path);
+    if (p.type === 1 || p.type === 2) {
+      const hasDuplicate = allReports.some(
+        r => r.name === p.name && r.type === p.type
+      );
+      if (!hasDuplicate) {
+        allReports.push(p);
+      }
+    }
+
     console.log(`File ${path} added, now ${allReports.length} files`);
-    socket.emit("report_added", processed);
+    socket.emit("report_added", p);
   });
 
   watcher.on("unlink", path => {

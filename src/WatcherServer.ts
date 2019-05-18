@@ -1,37 +1,75 @@
-import { Server, createServer } from "http";
+import { createServer, Server } from "http";
 import { AddressInfo } from "net";
 import * as express from "express";
 import * as socketIO from "socket.io";
 
-import ReportManager from "./helpers/ReportManager";
+import ReportManager, { Report, ReportType } from "./helpers/ReportManager";
 
 class WatcherServer {
   private readonly app: Express.Application;
   private readonly server: Server;
   private io: socketIO.Server;
   public address?: string | AddressInfo | null;
-  public rm: ReportManager;
+  public rm?: ReportManager;
 
-  constructor(watchDir: string) {
+  constructor() {
     this.app = express();
     this.server = createServer(this.app);
     this.io = socketIO(this.server);
-    this.rm = new ReportManager(watchDir);
   }
 
   /**
    * Starts the server on a port specified. If no port is specified, takes a random free port
+   * @param watchDir
    * @param port
    */
-  start(port?: number): void {
+  start(watchDir: string, port?: number): void {
     this.server.listen(port, () => {
       if (process.env.NODE_ENV !== "test" && process.env.NODE_ENV !== "ci")
         console.log(`HTTP Server listening on port ${this.getPort()}`);
     });
     this.address = this.server.address();
     this.io.on("connection", (socket: socketIO.Socket) => {
-      // New user connected, attach socket event listeners
+      // User is requesting ALL the reports
+      socket.on("report.all", () => {
+        const all = Array.from(this.rm.allReports.values());
+        socket.emit("report.all", all);
+      });
+
+      // User requesting ALL of the TO reports (sales)
+      socket.on("report.all.to", () => {
+        const allTo = this.rm.getReportByType(ReportType.To);
+        socket.emit("report.all.to", allTo);
+      });
+
+      // User requesting ALL of the FROM reports (stock)
+      socket.on("report.all.from", () => {
+        const allFrom = this.rm.getReportByType(ReportType.From);
+        socket.emit("report.all.from", allFrom);
+      });
     });
+
+    // Preparing callbacks
+    const handleAdded = (r: Report) => {
+      console.log(`${r.name} report type ${r.type} has been added`);
+      // have a loot at the type and fire a relevant event
+      if (r.type === ReportType.To) {
+        this.io.emit("report.added.to", r);
+      } else if (r.type === ReportType.From) {
+        this.io.emit("report.added.from", r);
+      }
+    };
+
+    const handleDeleted = (r: Report) => {
+      console.log(`${r.name} report type ${r.type} has been deleted`);
+      if (r.type === ReportType.To) {
+        this.io.emit("report.deleted.to", r);
+      } else if (r.type === ReportType.From) {
+        this.io.emit("report.deleted.from", r);
+      }
+    };
+
+    this.rm = new ReportManager(watchDir, handleAdded, handleDeleted);
   }
 
   /**

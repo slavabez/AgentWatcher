@@ -1,7 +1,8 @@
 import WatcherServer from "./WatcherServer";
+import * as config from "../package.json";
 
-const server = new WatcherServer(`/home/slava/ftp`);
+const server = new WatcherServer();
 
-server.start();
+server.start(config.watchDir);
 
 console.log(server.getAddress());

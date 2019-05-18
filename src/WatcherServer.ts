@@ -6,7 +6,7 @@ import * as socketIO from "socket.io";
 import ReportManager, { Report, ReportType } from "./helpers/ReportManager";
 
 class WatcherServer {
-  private readonly app: Express.Application;
+  private readonly app: express.Application;
   private readonly server: Server;
   private io: socketIO.Server;
   public address?: string | AddressInfo | null;
@@ -16,6 +16,9 @@ class WatcherServer {
     this.app = express();
     this.server = createServer(this.app);
     this.io = socketIO(this.server);
+
+    // Serve the static React site
+    this.app.use(express.static(`client/build`));
   }
 
   /**

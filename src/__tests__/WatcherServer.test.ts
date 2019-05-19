@@ -5,7 +5,7 @@ import * as SocketIOClient from "socket.io-client";
 
 describe("Simple connectivity tests", () => {
   let server: WatcherServer;
-  let clients: SocketIOClient.Socket[] = [];
+  let client: SocketIOClient.Socket;
   let fh: FileHelper;
 
   beforeAll(done => {
@@ -20,8 +20,17 @@ describe("Simple connectivity tests", () => {
     fh.fullCleanup(done);
   });
 
-  test("Let's see", () => {
-    console.log("Done!");
-    fh.createNReportFiles(10);
+  afterEach(() => {
+    if (client && client.connected) client.disconnect();
+  });
+
+  test("Basic single client connection", done => {
+    const connString = `http://localhost:${server.getPort()}`;
+    const client = SocketIOClient.connect(connString, {
+      transports: ["websocket"]
+    });
+    client.on("connect", () => {
+      done();
+    });
   });
 });

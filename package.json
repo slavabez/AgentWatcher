@@ -6,7 +6,10 @@
   "scripts": {
     "debug": "node --inspect=5858 -r ts-node/register src/app.ts",
     "start": "nodemon",
-    "build": "tsc",
+    "build:server": "tsc",
+    "build:client": "cd client && yarn build",
+    "copy-html": "cp -r client/build dist/html",
+    "build": "yarn run build:server && yarn run build:client && yarn run copy-html",
     "test": "jest --verbose",
     "test:watch": "jest --watchAll --env=node"
   },
@@ -34,6 +37,7 @@
   },
   "dependencies": {
     "chokidar": "^3.0.0",
+    "dotenv": "^8.0.0",
     "express": "^4.17.0",
     "socket.io": "^2.2.0"
   },

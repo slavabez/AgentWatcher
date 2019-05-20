@@ -18,7 +18,7 @@ class WatcherServer {
     this.io = socketIO(this.server);
 
     // Serve the static React site
-    this.app.use(express.static(`client/build`));
+    this.app.use(express.static(`html`));
   }
 
   /**

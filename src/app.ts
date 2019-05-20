@@ -1,8 +1,10 @@
+import * as dotenv from "dotenv";
 import WatcherServer from "./WatcherServer";
-import * as config from "../package.json";
+
+dotenv.config();
 
 const server = new WatcherServer();
 
-server.start(config.watchDir);
+server.start(process.env.WATCH_DIR, 5000);
 
 console.log(server.getAddress());

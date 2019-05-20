@@ -33,8 +33,8 @@ export default class FileHelper {
    */
   createReportFile(r: Report) {
     const fileName = r.type === ReportType.To ? "To1C.zip" : "From1C.zip";
-    fs.mkdirSync(`${this.uniqueDir}/${r.name}`);
-    fs.writeFileSync(`${this.uniqueDir}/${r.name}/${fileName}`, "Lol");
+    fs.mkdirSync(`${this.uniqueDir}${r.name}`);
+    fs.writeFileSync(`${this.uniqueDir}${r.name}/${fileName}`, "Lol");
   }
 
   async cleanup() {

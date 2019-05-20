@@ -27,6 +27,10 @@ export default class FileHelper {
     }
   }
 
+  /**
+   * Creates a file in relevant directory, to mock Agent Plus behaviour
+   * @param r
+   */
   createReportFile(r: Report) {
     const fileName = r.type === ReportType.To ? "To1C.zip" : "From1C.zip";
     fs.mkdirSync(`${this.uniqueDir}/${r.name}`);

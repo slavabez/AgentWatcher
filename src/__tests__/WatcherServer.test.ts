@@ -2,7 +2,7 @@ import "jest";
 import WatcherServer from "../WatcherServer";
 import FileHelper from "../helpers/FileHelper";
 import * as SocketIOClient from "socket.io-client";
-import {ReportType} from "../helpers/ReportManager";
+import { ReportType } from "../helpers/ReportManager";
 
 describe("Basic connectivity test", () => {
   test("Basic single client connection", done => {
@@ -108,6 +108,9 @@ describe("Integration tests", () => {
       done();
     });
 
-    fh.deleteFileForReport(report);
+    // Adding a small timeout to help register the event
+    setTimeout(() => {
+      fh.deleteFileForReport(report);
+    }, 100);
   });
 });

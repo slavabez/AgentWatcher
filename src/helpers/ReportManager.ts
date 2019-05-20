@@ -82,12 +82,11 @@ class ReportManager {
       }
     } while (files.length !== 0);
 
-    if (result){
+    if (result) {
       result.forEach(r => {
         this.addToReportMap(ReportManager.convert(r));
       });
     }
-
   }
 
   /**

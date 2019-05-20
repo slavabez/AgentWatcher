@@ -15,9 +15,10 @@ describe("Simple connectivity tests", () => {
     done();
   });
 
-  afterAll(done => {
-    server.stop();
-    fh.fullCleanup(done);
+  afterAll(async done => {
+    fh.fullCleanup();
+    await server.stop();
+    done();
   });
 
   afterEach(() => {

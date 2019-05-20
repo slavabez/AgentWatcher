@@ -33,8 +33,8 @@ export default class FileHelper {
     fs.writeFileSync(`${this.uniqueDir}/${r.name}/${fileName}`, "Lol");
   }
 
-  fullCleanup(cb: () => void){
-    rimraf(`./.${this.prefix}`, cb);
+  fullCleanup(){
+    rimraf.sync(`./.${this.prefix}`);
   }
 
   static createRandomReport(type: ReportType = ReportType.To): Report {

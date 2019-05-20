@@ -92,9 +92,9 @@ class WatcherServer {
       return this.address.port;
   }
 
-  stop(): void {
+  async stop() {
     this.io.close();
-    this.server.close();
+    await this.server.close();
   }
 }
 

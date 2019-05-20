@@ -1,5 +1,6 @@
 import * as chokidar from "chokidar";
 import * as fs from "fs";
+import * as path from "path";
 
 export enum ReportType {
   From = 1,
@@ -16,11 +17,12 @@ export interface Report {
 class ReportManager {
   public watcher: chokidar.FSWatcher;
   public allReports: Map<string, Report>;
+  public watchDir?: string;
 
   constructor(
     watchDir: string,
-    addCallback: (r: Report) => void,
-    removeCallback: (r: Report) => void
+    reportAddedCb: (r: Report) => void,
+    reportRemovedCb: (r: Report) => void
   ) {
     // Check that path specified is a directory
     try {
@@ -29,19 +31,20 @@ class ReportManager {
       console.error(`Error trying to access the directory ${watchDir}`, e);
     }
 
+    this.watchDir = watchDir;
     this.watcher = chokidar.watch(watchDir);
     this.allReports = new Map<string, Report>();
 
     this.watcher.on("add", path => {
       const converted = ReportManager.convert(path);
       this.addToReportMap(converted);
-      addCallback(converted);
+      reportAddedCb(converted);
     });
 
     this.watcher.on("unlink", path => {
       const deleted = ReportManager.convert(path, true);
       this.removeFromReportMap(deleted);
-      removeCallback(deleted);
+      reportRemovedCb(deleted);
     });
   }
 
@@ -60,6 +63,38 @@ class ReportManager {
     return Array.from(this.allReports.values()).filter(r => r.type === type);
   }
 
+  /**
+   * Forces reading from the files, without relying on the file watcher
+   */
+  forceReadFiles(): void {
+    const result = [];
+
+    const files = [this.watchDir];
+    do {
+      const filepath = files.pop();
+      const stat = fs.lstatSync(filepath);
+      if (stat.isDirectory()) {
+        fs.readdirSync(filepath).forEach(f =>
+          files.push(path.join(filepath, f))
+        );
+      } else if (stat.isFile()) {
+        result.push(filepath);
+      }
+    } while (files.length !== 0);
+
+    if (result){
+      result.forEach(r => {
+        this.addToReportMap(ReportManager.convert(r));
+      });
+    }
+
+  }
+
+  /**
+   * Converts file path to a digested object
+   * @param path - has to be the full path, including the /AgentPlus/ part.
+   * @param isDeleted - if true, doesn't try to get 'last modified'. Use when you know the file no longer exists.
+   */
   static convert(path: string, isDeleted: boolean = false): Report {
     // Remove all before and including AgentPlus\
     const cut = path.substring(path.indexOf("/AgentPlus/") + 11);

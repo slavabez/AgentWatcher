@@ -35,18 +35,21 @@ class WatcherServer {
     this.io.on("connection", (socket: socketIO.Socket) => {
       // User is requesting ALL the reports
       socket.on("report.all", () => {
+        this.rm.forceReadFiles();
         const all = Array.from(this.rm.allReports.values());
         socket.emit("report.all", all);
       });
 
       // User requesting ALL of the TO reports (sales)
       socket.on("report.all.to", () => {
+        this.rm.forceReadFiles();
         const allTo = this.rm.getReportByType(ReportType.To);
         socket.emit("report.all.to", allTo);
       });
 
       // User requesting ALL of the FROM reports (stock)
       socket.on("report.all.from", () => {
+        this.rm.forceReadFiles();
         const allFrom = this.rm.getReportByType(ReportType.From);
         socket.emit("report.all.from", allFrom);
       });
@@ -54,7 +57,6 @@ class WatcherServer {
 
     // Preparing callbacks
     const handleAdded = (r: Report) => {
-      console.log(`${r.name} report type ${r.type} has been added`);
       // have a loot at the type and fire a relevant event
       if (r.type === ReportType.To) {
         this.io.emit("report.added.to", r);
@@ -64,7 +66,6 @@ class WatcherServer {
     };
 
     const handleDeleted = (r: Report) => {
-      console.log(`${r.name} report type ${r.type} has been deleted`);
       if (r.type === ReportType.To) {
         this.io.emit("report.deleted.to", r);
       } else if (r.type === ReportType.From) {

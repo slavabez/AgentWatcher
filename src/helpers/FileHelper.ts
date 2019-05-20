@@ -11,7 +11,7 @@ export default class FileHelper {
   public readonly uniqueDir: string;
   public readonly prefix?: string;
 
-  constructor(prefix: string = uniqid()){
+  constructor(prefix: string = uniqid()) {
     this.prefix = prefix;
     this.uniqueDir = `./.${this.prefix}/AgentPlus/`;
     // Create the prefixed folder
@@ -19,7 +19,7 @@ export default class FileHelper {
     fs.mkdirSync(this.uniqueDir);
   }
 
-  createNReportFiles(n: number){
+  createNReportFiles(n: number) {
     for (let i = 0; i < n; i++) {
       let type: boolean | ReportType = !!Math.round(Math.random());
       type = type ? ReportType.To : ReportType.From;
@@ -28,12 +28,12 @@ export default class FileHelper {
   }
 
   createReportFile(r: Report) {
-    const fileName = (r.type === ReportType.To) ? "To1C.zip" : "From1C.zip";
+    const fileName = r.type === ReportType.To ? "To1C.zip" : "From1C.zip";
     fs.mkdirSync(`${this.uniqueDir}/${r.name}`);
     fs.writeFileSync(`${this.uniqueDir}/${r.name}/${fileName}`, "Lol");
   }
 
-  fullCleanup(){
+  fullCleanup() {
     rimraf.sync(`./.${this.prefix}`);
   }
 
@@ -46,5 +46,13 @@ export default class FileHelper {
     };
   }
 
-
+  deleteFileForReport(r: Report) {
+    const fileName = r.type === ReportType.To ? "To1C.zip" : "From1C.zip";
+    const path = `${this.uniqueDir}${r.name}/${fileName}`;
+    try {
+      fs.unlinkSync(path);
+    } catch (e) {
+      console.error(`Error attempting to delete file ${path}`);
+    }
+  }
 }

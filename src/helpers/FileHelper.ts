@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as uniqid from "uniqid";
 import * as faker from "faker";
-import * as rimraf from "rimraf";
+import * as del from "del";
 import { Report, ReportType } from "./ReportManager";
 
 /**
@@ -37,8 +37,8 @@ export default class FileHelper {
     fs.writeFileSync(`${this.uniqueDir}/${r.name}/${fileName}`, "Lol");
   }
 
-  fullCleanup() {
-    rimraf.sync(`./.${this.prefix}`);
+  async cleanup() {
+    await del(`./.${this.prefix}`, { force: true });
   }
 
   static createRandomReport(type: ReportType = ReportType.To): Report {

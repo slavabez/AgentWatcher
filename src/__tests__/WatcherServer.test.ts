@@ -15,7 +15,7 @@ describe("Basic connectivity test", () => {
     });
     client.on("connect", async () => {
       client.disconnect();
-      fh.fullCleanup();
+      await fh.cleanup();
       await server.stop();
       done();
     });
@@ -49,7 +49,7 @@ describe("Integration tests", () => {
 
   afterEach(async done => {
     if (client && client.connected) client.disconnect();
-    fh.fullCleanup();
+    await fh.cleanup();
     await server.stop();
     done();
   });

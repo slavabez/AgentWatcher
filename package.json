@@ -6,8 +6,8 @@
   "scripts": {
     "debug": "node --inspect=5858 -r ts-node/register src/app.ts",
     "start": "nodemon",
-    "build:server": "tsc",
-    "build:client": "cd client && yarn build",
+    "build:server": "yarn install && tsc",
+    "build:client": "cd client && yarn install && yarn build",
     "copy-html": "cp -r client/build dist/html",
     "build": "yarn run build:server && yarn run build:client && yarn run copy-html",
     "test": "jest --verbose",

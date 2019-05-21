@@ -1,41 +1,94 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import ioClient from "socket.io-client";
-import logo from './logo.svg';
-import './App.css';
+import styled from "styled-components";
+
+import ReportView from "./ReportView";
+
+const AppWrapper = styled.div`
+  font-family: "Roboto", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const socket = ioClient.connect();
+socket.on("connect", () => {
+  console.log("Connected");
+});
 
 function App() {
 
+  const [allSales, setAllSales] = useState(new Map());
+  const [allStocks, setAllStocks] = useState(new Map());
+
+  const handleSalesAdd = (s) => {
+    const sales = allSales;
+    sales.set(`${s.name}-${s.type}`, s);
+    setAllSales(sales);
+  };
+
   useEffect(() => {
-    const socket = ioClient.connect();
-    socket.on("connect", () => {
-      console.log(`We got a connection`);
-    });
+    try {
 
-    socket.on("report.all", r => {
-      console.log(`Got some reports:`, r);
-    });
+      socket.on("report.all", r => {
+        const sales = new Map();
+        const stocks = new Map();
+        r.forEach(r => {
+          if (r.type === 2) {
+            // "To", i.e. sale
+            sales.set(`${r.name}-${r.type}`, r);
+          } else if (r.type === 1) {
+            stocks.set(`${r.name}-${r.type}`, r);
+          }
+        });
+        setAllSales(sales);
+        setAllStocks(stocks);
+      });
 
-    socket.emit("report.all");
+      socket.on("report.added.to", r => {
+        console.log(`TO report added`, r);
+        handleSalesAdd(r);
+      });
+
+      socket.on("report.added.from", r => {
+        console.log("FROM report added", r);
+        allStocks.set(`${r.name}-${r.type}`, r);
+        setAllStocks(allStocks);
+      });
+
+      socket.on("report.deleted.to", r => {
+        console.log("TO report deleted", r);
+        allSales.delete(`${r.name}-${r.type}`);
+        setAllSales(allSales);
+      });
+
+      socket.on("report.deleted.from", r => {
+        console.log("FROM report deleted", r);
+        allStocks.delete(`${r.name}-${r.type}`);
+        setAllStocks(allStocks);
+      });
+
+      socket.emit("report.all");
+    } catch (e) {
+      console.error("Error connecting to the server");
+    }
+
+    return () => {
+      socket.close();
+    };
   }, []);
 
+  console.log("render");
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppWrapper>
+      <h1>Файлы обмена с Агент Плюс</h1>
+      <ReportView sales={allSales} stocks={allStocks} />
+    </AppWrapper>
   );
 }
+
+
 
 export default App;

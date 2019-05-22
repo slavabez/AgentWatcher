@@ -9,10 +9,14 @@ const Wrapper = styled.div`
   justify-content: space-around;
 `;
 
-const List = styled.div``;
+const List = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  align-items: center;
+`;
 
 const ReportView = ({ sales, stocks }) => {
-
   const salesSorted = Array.from(sales.values()).sort(compareReport);
   const stocksSorted = Array.from(stocks.values()).sort(compareReport);
 

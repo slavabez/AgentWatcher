@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
-import useSocket from "./useIo";
 import ReportView from "./ReportView";
+import { sortIntoCategories } from "./helpers";
+import useInterval from "./useInterval";
+
+const API_URL = `http://192.168.10.8:5000/api/reports`;
 
 const AppWrapper = styled.div`
   font-family: "Roboto", sans-serif;
@@ -12,85 +16,38 @@ const AppWrapper = styled.div`
   justify-content: center;
 `;
 
+const Header = styled.div`
+  width: 100%;
+  text-align: center;
+  background-color: rebeccapurple;
+  color: white;
+`;
+
 function App() {
   const [allSales, setAllSales] = useState(new Map());
   const [allStocks, setAllStocks] = useState(new Map());
-  const [socket] = useSocket();
 
-  socket.on("connect", () => {
-    console.log("Connected to IO");
-  });
-
-  const handleAllReports = allReports => {
-    console.log("All reports received", allReports);
-    const sales = new Map();
-    const stocks = new Map();
-    allReports.forEach(r => {
-      if (r.type === 2) {
-        // "To", i.e. sale
-        sales.set(`${r.name}-${r.type}`, r);
-      } else if (r.type === 1) {
-        stocks.set(`${r.name}-${r.type}`, r);
-      }
-    });
-    setAllSales(sales);
-    setAllStocks(stocks);
+  const fetchData = async () => {
+    console.log("Fetching latest data");
+    const res = await axios.get(API_URL);
+    const sorted = sortIntoCategories(res.data);
+    setAllSales(sorted.to);
+    setAllStocks(sorted.from);
   };
-
-  const handleToReportAdded = report => {
-    console.log("TO Added", report, allSales);
-    const sales = allSales;
-    sales.set(`${report.name}-${report.type}`, report);
-    setAllSales(sales);
-  };
-
-  const handleFromReportAdded = report => {
-    console.log("FROM Added", report, allStocks);
-    const stocks = allStocks;
-    stocks.set(`${report.name}-${report.type}`, report);
-    setAllStocks(stocks);
-  };
-
-  const handleToReportRemoved = report => {
-    console.log("TO removed, ", report, allSales);
-    const sales = allSales;
-    sales.delete(`${report.name}-${report.type}`);
-    setAllSales(sales);
-  };
-
-  const handleFromReportRemoved = report => {
-    console.log("FROM removed, ", report, allStocks);
-    const stocks = allStocks;
-    stocks.delete(`${report.name}-${report.type}`);
-    setAllStocks(stocks);
-  };
-
-  socket.on("report.all", handleAllReports);
-  socket.on("report.added.to", handleToReportAdded);
-  socket.on("report.added.from", handleFromReportAdded);
-  socket.on("report.deleted.to", handleToReportRemoved);
-  socket.on("report.deleted.from", handleFromReportRemoved);
 
   useEffect(() => {
-    console.log("Use-effect trigger");
-    try {
-      socket.open();
-      socket.emit("report.all");
-    } catch (e) {
-      console.error("Error connecting to the server");
-    }
+    fetchData();
+  }, []);
 
-    return(() => {
-      socket.removeAllListeners();
-      socket.stop();
-    });
-  }, [socket]);
+  useInterval(fetchData, 30000);
 
   console.log("App (re-)rendered");
 
   return (
     <AppWrapper>
-      <h1>Файлы обмена с Агент Плюс</h1>
+      <Header>
+        <h1>Файлы обмена с Агент Плюс</h1>
+      </Header>
       <ReportView sales={allSales} stocks={allStocks} />
     </AppWrapper>
   );

@@ -45,6 +45,7 @@ class ReportManager {
    */
   forceReadFiles(): void {
     const result = [];
+    this.allReports = new Map();
 
     const files = [this.watchDir];
     do {

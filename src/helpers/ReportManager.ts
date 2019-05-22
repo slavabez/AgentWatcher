@@ -1,6 +1,6 @@
-import * as chokidar from "chokidar";
-import * as fs from "fs";
-import * as path from "path";
+import fs from "fs";
+import path from "path";
+import slash from "slash";
 
 export enum ReportType {
   From = 1,
@@ -15,7 +15,6 @@ export interface Report {
 }
 
 class ReportManager {
-  public watcher: chokidar.FSWatcher;
   public allReports: Map<string, Report>;
   public watchDir?: string;
 
@@ -52,8 +51,10 @@ class ReportManager {
       const filepath = files.pop();
       const stat = fs.lstatSync(filepath);
       if (stat.isDirectory()) {
-        fs.readdirSync(filepath).forEach(f =>
-          files.push(path.join(filepath, f))
+        fs.readdirSync(filepath).forEach(f => {
+            const normalisedPath = slash(path.join(filepath, f));
+            files.push(normalisedPath);
+          }
         );
       } else if (stat.isFile()) {
         result.push(filepath);
@@ -84,14 +85,14 @@ class ReportManager {
       const name = this.findName(rawName);
       const type = this.getType(rawType);
       const time = isDeleted ? null : fs.statSync(path).mtime;
-      return { name, type, time };
+      return {name, type, time};
     } else if (parts.length === 2) {
       // Regular, 2 parts (Name\From1C.zip)
       const [rawName, rawType] = parts;
       const name = this.findName(rawName);
       const type = this.getType(rawType);
       const time = isDeleted ? null : fs.statSync(path).mtime;
-      return { name, type, time };
+      return {name, type, time};
     } else {
       return {
         name: "Error",

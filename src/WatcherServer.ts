@@ -1,9 +1,9 @@
-import { createServer, Server } from "http";
-import { AddressInfo } from "net";
-import * as express from "express";
-import * as cors from "cors";
+import {createServer, Server} from "http";
+import {AddressInfo} from "net";
+import express from "express";
+import cors from "cors";
 
-import ReportManager, { ReportType } from "./helpers/ReportManager";
+import ReportManager, {ReportType} from "./helpers/ReportManager";
 import DBHelper from "./helpers/DatabaseHelper";
 
 class WatcherServer {
@@ -74,8 +74,8 @@ class WatcherServer {
       return this.address.port;
   }
 
-  async stop() {
-    await this.server.close();
+  stop(cb) {
+    this.server.close(cb);
   }
 }
 

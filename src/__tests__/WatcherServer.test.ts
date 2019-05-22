@@ -2,10 +2,10 @@ import "jest";
 import axios from "axios";
 import WatcherServer from "../WatcherServer";
 import FileHelper from "../helpers/FileHelper";
-import { ReportType } from "../helpers/ReportManager";
+import {ReportType} from "../helpers/ReportManager";
 
 describe("Basic API tests", () => {
-  test("Basic single client connection", async () => {
+  test("Basic single client connection", async done => {
     const server = new WatcherServer();
     const fh = new FileHelper();
     server.start(fh.uniqueDir);
@@ -14,6 +14,7 @@ describe("Basic API tests", () => {
     // Needs to be an empty array
     expect(res.data).toStrictEqual([]);
     await fh.cleanup();
+    server.stop(done);
   });
 });
 
@@ -31,12 +32,12 @@ describe("Integration tests", () => {
     server = new WatcherServer();
     fh = new FileHelper();
     server.start(fh.uniqueDir);
-    connectionString= `http://localhost:${server.getPort()}`;
+    connectionString = `http://localhost:${server.getPort()}`;
   });
 
-  afterEach(async () => {
+  afterEach(async done => {
     await fh.cleanup();
-    await server.stop();
+    server.stop(done);
   });
 
   test("Returns right number of reports", async () => {

@@ -1,7 +1,7 @@
-import * as fs from "fs";
-import * as uniqid from "uniqid";
-import * as faker from "faker";
-import * as del from "del";
+import fs from "fs";
+import uniqid from "uniqid";
+import faker from "faker";
+import del from "del";
 import { Report, ReportType } from "./ReportManager";
 
 /**

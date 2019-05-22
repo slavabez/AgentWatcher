@@ -6,7 +6,7 @@ import ReportView from "./ReportView";
 import { sortIntoCategories } from "./helpers";
 import useInterval from "./useInterval";
 
-const API_URL = `http://192.168.10.8:5000/api/reports`;
+const API_URL = `/api/reports`;
 
 const AppWrapper = styled.div`
   font-family: "Roboto", sans-serif;

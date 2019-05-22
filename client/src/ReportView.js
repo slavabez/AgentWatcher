@@ -5,15 +5,25 @@ import ListItem from "./ListItem";
 
 const Wrapper = styled.div`
   display: flex;
+  flex-direction: column;
   width: 100%;
   justify-content: space-around;
+  align-items: flex-start;
+  
+  @media(min-width: 1024px) {
+    flex-direction: row;
+  }
 `;
 
 const List = styled.div`
   display: flex;
   flex-direction: column;
-  width: 50%;
+  width: 100%;
   align-items: center;
+  
+  @media(min-width: 1024px) {
+    width: 50%;
+  }
 `;
 
 const ReportView = ({ sales, stocks }) => {

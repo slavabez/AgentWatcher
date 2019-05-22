@@ -1,6 +1,7 @@
 import { createServer, Server } from "http";
 import { AddressInfo } from "net";
 import * as express from "express";
+import * as cors from "cors";
 import * as socketIO from "socket.io";
 
 import ReportManager, { Report, ReportType } from "./helpers/ReportManager";
@@ -14,6 +15,7 @@ class WatcherServer {
 
   constructor() {
     this.app = express();
+    this.app.use(cors());
     this.server = createServer(this.app);
     this.io = socketIO(this.server);
 

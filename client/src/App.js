@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
+import useSocket from "./useIo";
 import ReportView from "./ReportView";
 
 const AppWrapper = styled.div`
@@ -12,34 +12,14 @@ const AppWrapper = styled.div`
   justify-content: center;
 `;
 
-const socket = io.connect();
-socket.on("connect", () => {
-  console.log("IO connected");
-});
-
-const subscribeToAllReports = (cb) => {
-  socket.on("report.all", all => cb(all));
-};
-
-const subscribeToAddedTo = (cb) => {
-  socket.on("report.added.to", newTo => cb(newTo));
-};
-
-const subscribeToAddedFrom = (cb) => {
-  socket.on("report.added.from", newFrom => cb(newFrom));
-};
-
-const subscribeToRemovedTo = (cb) => {
-  socket.on("report.deleted.to", removedTo => cb(removedTo));
-};
-
-const subscribeToRemovedFrom = (cb) => {
-  socket.on("report.deleted.from", removedFrom => cb(removedFrom));
-};
-
 function App() {
   const [allSales, setAllSales] = useState(new Map());
   const [allStocks, setAllStocks] = useState(new Map());
+  const [socket] = useSocket();
+
+  socket.on("connect", () => {
+    console.log("Connected to IO");
+  });
 
   const handleAllReports = allReports => {
     console.log("All reports received", allReports);
@@ -85,24 +65,26 @@ function App() {
     setAllStocks(stocks);
   };
 
-
+  socket.on("report.all", handleAllReports);
+  socket.on("report.added.to", handleToReportAdded);
+  socket.on("report.added.from", handleFromReportAdded);
+  socket.on("report.deleted.to", handleToReportRemoved);
+  socket.on("report.deleted.from", handleFromReportRemoved);
 
   useEffect(() => {
+    console.log("Use-effect trigger");
     try {
       socket.open();
       socket.emit("report.all");
-
-      subscribeToAllReports(handleAllReports);
-      subscribeToAddedTo(handleToReportAdded);
-      subscribeToAddedFrom(handleFromReportAdded);
-      subscribeToRemovedTo(handleToReportRemoved);
-      subscribeToRemovedFrom(handleFromReportRemoved);
-
     } catch (e) {
       console.error("Error connecting to the server");
     }
 
-  }, []);
+    return(() => {
+      socket.removeAllListeners();
+      socket.stop();
+    });
+  }, [socket]);
 
   console.log("App (re-)rendered");
 

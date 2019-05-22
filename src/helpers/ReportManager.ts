@@ -36,12 +36,14 @@ class ReportManager {
     this.allReports = new Map<string, Report>();
 
     this.watcher.on("add", path => {
+      console.log(`ADDED: ${path}`);
       const converted = ReportManager.convert(path);
       this.addToReportMap(converted);
       reportAddedCb(converted);
     });
 
     this.watcher.on("unlink", path => {
+      console.log(`REMOVED: ${path}`);
       const deleted = ReportManager.convert(path, true);
       this.removeFromReportMap(deleted);
       reportRemovedCb(deleted);

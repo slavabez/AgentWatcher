@@ -59,16 +59,20 @@ class WatcherServer {
     const handleAdded = (r: Report) => {
       // have a loot at the type and fire a relevant event
       if (r.type === ReportType.To) {
+        console.log(`Emitting new TO report for ${r.name}`);
         this.io.emit("report.added.to", r);
       } else if (r.type === ReportType.From) {
+        console.log(`Emitting new FROM report for ${r.name}`);
         this.io.emit("report.added.from", r);
       }
     };
 
     const handleDeleted = (r: Report) => {
       if (r.type === ReportType.To) {
+        console.log(`Emitting deleted TO report for ${r.name}`);
         this.io.emit("report.deleted.to", r);
       } else if (r.type === ReportType.From) {
+        console.log(`Emitting deleted FROM report for ${r.name}`);
         this.io.emit("report.deleted.from", r);
       }
     };

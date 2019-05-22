@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import styled from "styled-components";
-import axios from "axios";
+import { Link, Router } from "@reach/router";
 
-import ReportView from "./ReportView";
-import { sortIntoCategories } from "./helpers";
-import useInterval from "./useInterval";
-
-const API_URL = `/api/reports`;
+import Reports from "./components/ReportsSection";
+import DBSection from "./components/DBSection";
 
 const AppWrapper = styled.div`
   font-family: "Roboto", sans-serif;
@@ -21,34 +18,40 @@ const Header = styled.div`
   text-align: center;
   background-color: rebeccapurple;
   color: white;
+  text-decoration: none;
+
+  a, h1 {
+    color: white;
+    text-decoration: none;
+  }
+`;
+
+const SettingsButton = styled(Link)`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: white;
+  text-decoration: none;
+`;
+
+const StyledRouter = styled(Router)`
+  width: 100%;
 `;
 
 function App() {
-  const [allSales, setAllSales] = useState(new Map());
-  const [allStocks, setAllStocks] = useState(new Map());
-
-  const fetchData = async () => {
-    console.log("Fetching latest data");
-    const res = await axios.get(API_URL);
-    const sorted = sortIntoCategories(res.data);
-    setAllSales(sorted.to);
-    setAllStocks(sorted.from);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useInterval(fetchData, 30000);
-
-  console.log("App (re-)rendered");
-
   return (
     <AppWrapper>
       <Header>
-        <h1>Файлы обмена с Агент Плюс</h1>
+        <Link to="/">
+          <h1>Файлы обмена с Агент Плюс</h1>
+        </Link>
+
+        <SettingsButton to="/db">Настройки</SettingsButton>
       </Header>
-      <ReportView sales={allSales} stocks={allStocks} />
+      <StyledRouter>
+        <Reports path="/" />
+        <DBSection path="db" />
+      </StyledRouter>
     </AppWrapper>
   );
 }

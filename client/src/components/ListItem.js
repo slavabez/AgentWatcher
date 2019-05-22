@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import moment from "moment";
+import moment from "moment/moment";
 import "moment/locale/ru";
 
-import { UploadIcon, DownloadIcon } from "./Icons";
+import {DownloadIcon, UploadIcon} from "./Icons";
 
 moment.locale("ru");
 
@@ -32,7 +32,7 @@ const LeftSide = styled.div`
 const Time = styled.div``;
 
 const ListItem = props => {
-  const icon = props.type === 2 ? <DownloadIcon /> : <UploadIcon />;
+  const icon = props.type === 2 ? <DownloadIcon/> : <UploadIcon/>;
   const timeSince = moment(props.time).fromNow();
   return (
     <Wrapper>

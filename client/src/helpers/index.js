@@ -1,4 +1,3 @@
-
 export const sortIntoCategories = (allReports) => {
   const sales = new Map();
   const stocks = new Map();

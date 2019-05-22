@@ -2,14 +2,12 @@ import { createServer, Server } from "http";
 import { AddressInfo } from "net";
 import * as express from "express";
 import * as cors from "cors";
-import * as socketIO from "socket.io";
 
-import ReportManager, { Report, ReportType } from "./helpers/ReportManager";
+import ReportManager, { ReportType } from "./helpers/ReportManager";
 
 class WatcherServer {
   private readonly app: express.Application;
   private readonly server: Server;
-  private io: socketIO.Server;
   public address?: string | AddressInfo | null;
   public rm?: ReportManager;
 
@@ -17,7 +15,6 @@ class WatcherServer {
     this.app = express();
     this.app.use(cors());
     this.server = createServer(this.app);
-    this.io = socketIO(this.server);
 
     // Serve the static React site
     this.app.use(express.static(`html`));
@@ -34,52 +31,27 @@ class WatcherServer {
         console.log(`HTTP Server listening on port ${this.getPort()}`);
     });
     this.address = this.server.address();
-    this.io.on("connection", (socket: socketIO.Socket) => {
-      // User is requesting ALL the reports
-      socket.on("report.all", () => {
-        this.rm.forceReadFiles();
-        const all = Array.from(this.rm.allReports.values());
-        socket.emit("report.all", all);
-      });
 
-      // User requesting ALL of the TO reports (sales)
-      socket.on("report.all.to", () => {
-        this.rm.forceReadFiles();
-        const allTo = this.rm.getReportByType(ReportType.To);
-        socket.emit("report.all.to", allTo);
-      });
-
-      // User requesting ALL of the FROM reports (stock)
-      socket.on("report.all.from", () => {
-        this.rm.forceReadFiles();
-        const allFrom = this.rm.getReportByType(ReportType.From);
-        socket.emit("report.all.from", allFrom);
-      });
+    this.app.get("/api/reports", (req: express.Request, res: express.Response) => {
+      this.rm.forceReadFiles();
+      const all = Array.from(this.rm.allReports.values());
+      res.send(all);
     });
 
-    // Preparing callbacks
-    const handleAdded = (r: Report) => {
-      // have a loot at the type and fire a relevant event
-      if (r.type === ReportType.To) {
-        console.log(`Emitting new TO report for ${r.name}`);
-        this.io.emit("report.added.to", r);
-      } else if (r.type === ReportType.From) {
-        console.log(`Emitting new FROM report for ${r.name}`);
-        this.io.emit("report.added.from", r);
-      }
-    };
+    this.app.get("/api/reports/to", (req: express.Request, res: express.Response) => {
+      this.rm.forceReadFiles();
+      const allTo = this.rm.getReportByType(ReportType.To);
+      res.send(allTo);
+    });
 
-    const handleDeleted = (r: Report) => {
-      if (r.type === ReportType.To) {
-        console.log(`Emitting deleted TO report for ${r.name}`);
-        this.io.emit("report.deleted.to", r);
-      } else if (r.type === ReportType.From) {
-        console.log(`Emitting deleted FROM report for ${r.name}`);
-        this.io.emit("report.deleted.from", r);
-      }
-    };
+    this.app.get("/api/reports/from", (req: express.Request, res: express.Response) => {
+      this.rm.forceReadFiles();
+      const allFrom = this.rm.getReportByType(ReportType.From);
+      res.send(allFrom);
+    });
 
-    this.rm = new ReportManager(watchDir, handleAdded, handleDeleted);
+
+    this.rm = new ReportManager(watchDir);
   }
 
   /**
@@ -100,7 +72,6 @@ class WatcherServer {
   }
 
   async stop() {
-    this.io.close();
     await this.server.close();
   }
 }

@@ -19,11 +19,7 @@ class ReportManager {
   public allReports: Map<string, Report>;
   public watchDir?: string;
 
-  constructor(
-    watchDir: string,
-    reportAddedCb: (r: Report) => void,
-    reportRemovedCb: (r: Report) => void
-  ) {
+  constructor(watchDir: string) {
     // Check that path specified is a directory
     try {
       fs.accessSync(watchDir, fs.constants.F_OK);
@@ -32,32 +28,11 @@ class ReportManager {
     }
 
     this.watchDir = watchDir;
-    this.watcher = chokidar.watch(watchDir);
     this.allReports = new Map<string, Report>();
-
-    this.watcher.on("add", path => {
-      console.log(`ADDED: ${path}`);
-      const converted = ReportManager.convert(path);
-      this.addToReportMap(converted);
-      reportAddedCb(converted);
-    });
-
-    this.watcher.on("unlink", path => {
-      console.log(`REMOVED: ${path}`);
-      const deleted = ReportManager.convert(path, true);
-      this.removeFromReportMap(deleted);
-      reportRemovedCb(deleted);
-    });
   }
 
   addToReportMap(r: Report) {
     this.allReports.set(`${r.name}-${r.type}`, r);
-  }
-
-  removeFromReportMap(r: Report) {
-    if (this.allReports.has(`${r.name}-${r.type}`)) {
-      this.allReports.delete(`${r.name}-${r.type}`);
-    }
   }
 
   getReportByType(type: ReportType) {

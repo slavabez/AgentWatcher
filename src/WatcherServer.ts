@@ -4,17 +4,20 @@ import * as express from "express";
 import * as cors from "cors";
 
 import ReportManager, { ReportType } from "./helpers/ReportManager";
+import DBHelper from "./helpers/DatabaseHelper";
 
 class WatcherServer {
   private readonly app: express.Application;
   private readonly server: Server;
   public address?: string | AddressInfo | null;
   public rm?: ReportManager;
+  public dbh?: DBHelper;
 
   constructor() {
     this.app = express();
     this.app.use(cors());
     this.server = createServer(this.app);
+    this.dbh = new DBHelper();
 
     // Serve the static React site
     this.app.use(express.static(`html`));

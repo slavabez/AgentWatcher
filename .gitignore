@@ -8,6 +8,7 @@
 out
 gen
 dist
+names.db
 
 ### Node template
 # Logs

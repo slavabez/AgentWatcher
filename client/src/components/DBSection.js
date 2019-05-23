@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
 const API_PATH = ``;
 
@@ -27,31 +28,6 @@ const TableHead = styled.thead`
     height: 3rem;
   }
 `;
-
-const dummySettings = {
-  names: [
-    {
-      id: "123",
-      path: "John",
-      name: "Джон"
-    },
-    {
-      id: "124",
-      path: "Alex",
-      name: "Алиикс"
-    },
-    {
-      id: "125",
-      path: "Emma",
-      name: "Эммс"
-    },
-    {
-      id: "126",
-      path: "Peter",
-      name: "Петя"
-    }
-  ]
-};
 
 const EditableRow = ({ id, path, name, update }) => {
   // const [isLoading, setLoading] = useState(false);

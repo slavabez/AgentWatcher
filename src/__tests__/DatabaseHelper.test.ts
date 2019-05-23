@@ -63,15 +63,15 @@ describe(`Functional tests for CRUD operations`, () => {
 
     const changed1 = await dbh.updateName({
       id: +id1,
-      path: "path2",
       name: "Игра2"
     });
     expect(changed1).toBe(id1);
 
+    // Path cannot be changed
     const get2 = await dbh.getNameById(+id1);
     expect(get2).toEqual({
       id: +id1,
-      path: "path2",
+      path: "path1",
       name: "Игра2"
     });
   });

@@ -17,6 +17,7 @@ class WatcherServer {
   constructor() {
     this.app = express();
     this.app.use(cors());
+    this.app.use(express.json());
     this.server = createServer(this.app);
     this.dbh = new DBHelper();
 
@@ -31,8 +32,6 @@ class WatcherServer {
 
     // Serve the static React site
     this.app.use(express.static(`html`));
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
 
     this.app.get("*", (req, res) =>
       res.sendFile(path.resolve("html", "index.html"))
@@ -110,13 +109,13 @@ class WatcherServer {
   };
 
   handleGetNameById = async (req: express.Request, res: express.Response) => {
-    const id = req.query.id;
+    const id = req.params.id;
     const name = await this.dbh.getNameById(id);
     res.send(name);
   };
 
   handleUpdateName = async (req: express.Request, res: express.Response) => {
-    const id = req.query.id;
+    const id = req.params.id;
     const { name } = req.body;
     await this.dbh.updateName({ id, name });
     const n = await this.dbh.getNameById(id);

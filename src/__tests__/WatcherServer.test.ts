@@ -103,12 +103,11 @@ describe("Integration tests", () => {
     const names = await axios.get(`${connectionString}/api/names`);
     expect(names.data).toHaveLength(2);
 
-    const newNames = ["Name 1", "Name 2"];
     const updated = await axios.put(
       `${connectionString}/api/names/${names.data[0].id}`,
-      { name: newNames[0] }
+      { name: "New Name" }
     );
 
-    expect(updated.data).toEqual({ id: names[0].id, path: names[0].path, name: newNames[0] });
+    expect(updated.data).toEqual({ id: names.data[0].id, path: names.data[0].path, name: "New Name" });
   });
 });

@@ -9,14 +9,14 @@ describe(`Functional tests for CRUD operations`, () => {
 
   beforeEach(async () => {
     uniqueDb = uniqid();
-    dbh = new DBH(`./.${uniqueDb}.db`);
+    dbh = new DBH();
     await dbh.initialiseTables();
   });
 
   afterEach(async () => {
     await dbh.stop();
     // Delete the file
-    await del(`./.${uniqueDb}.db`, { force: true });
+    await del(dbh.dbFilePath, { force: true });
   });
 
   test("Insert 2 names, verify we get incrementing IDs back", async () => {

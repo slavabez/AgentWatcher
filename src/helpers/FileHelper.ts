@@ -27,6 +27,14 @@ export default class FileHelper {
     }
   }
 
+  createUniqueReportFiles(n: number) {
+    for (let i = 0; i < n; i++) {
+      let type: boolean | ReportType = !!Math.round(Math.random());
+      type = type ? ReportType.To : ReportType.From;
+      this.createReportFile(FileHelper.createUniqueRandomReport(type));
+    }
+  }
+
   /**
    * Creates a file in relevant directory, to mock Agent Plus behaviour
    * @param r
@@ -45,6 +53,15 @@ export default class FileHelper {
     const someTimeAgo = Date.now() - 60 * 1000 * 60 * Math.random();
     return {
       name: faker.name.lastName().replace(" ", ""),
+      type,
+      time: new Date(someTimeAgo)
+    };
+  }
+
+  static createUniqueRandomReport(type: ReportType = ReportType.To): Report {
+    const someTimeAgo = Date.now() - 60 * 1000 * 60 * Math.random();
+    return {
+      name: uniqid(),
       type,
       time: new Date(someTimeAgo)
     };

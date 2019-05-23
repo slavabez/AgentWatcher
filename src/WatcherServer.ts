@@ -1,10 +1,10 @@
-import {createServer, Server} from "http";
-import {AddressInfo} from "net";
+import { createServer, Server } from "http";
+import { AddressInfo } from "net";
 import express from "express";
 import cors from "cors";
 import path from "path";
 
-import ReportManager, {ReportType} from "./helpers/ReportManager";
+import ReportManager, { ReportType } from "./helpers/ReportManager";
 import DBHelper from "./helpers/DatabaseHelper";
 
 class WatcherServer {
@@ -29,8 +29,9 @@ class WatcherServer {
     // Serve the static React site
     this.app.use(express.static(`html`));
 
-    this.app.get('*', (req, res) => res.sendFile(path.resolve('html', 'index.html')));
-
+    this.app.get("*", (req, res) =>
+      res.sendFile(path.resolve("html", "index.html"))
+    );
   }
 
   /**
@@ -65,31 +66,38 @@ class WatcherServer {
       return this.address.port;
   }
 
-  stop(cb) {
-    this.server.close(cb);
+  stop() {
+    return new Promise((resolve, reject) => {
+      this.server.close(err => {
+        if (err) reject(err);
+        resolve();
+      });
+    });
   }
 
-  handleGetAllReports = (req: express.Request, res: express.Response) => {
-    this.rm.forceReadFiles(this.dbh);
+  handleGetAllReports = async (req: express.Request, res: express.Response) => {
+    this.rm.forceReadFiles();
     const all = Array.from(this.rm.allReports.values());
+    await this.rm.verifyAllReportsToDb(this.dbh);
     res.send(all);
   };
 
-  handleGetToReports = (req: express.Request, res: express.Response) => {
-    this.rm.forceReadFiles(this.dbh);
+  handleGetToReports = async (req: express.Request, res: express.Response) => {
+    this.rm.forceReadFiles();
     const allTo = this.rm.getReportByType(ReportType.To);
+    await this.rm.verifyAllReportsToDb(this.dbh);
     res.send(allTo);
   };
 
-  handleGetFromReports = (req: express.Request, res: express.Response) => {
-    this.rm.forceReadFiles(this.dbh);
+  handleGetFromReports = async (
+    req: express.Request,
+    res: express.Response
+  ) => {
+    this.rm.forceReadFiles();
     const allFrom = this.rm.getReportByType(ReportType.From);
+    await this.rm.verifyAllReportsToDb(this.dbh);
     res.send(allFrom);
   };
-
-
-
-
 }
 
 export default WatcherServer;

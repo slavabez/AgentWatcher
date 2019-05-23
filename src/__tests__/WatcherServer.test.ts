@@ -1,20 +1,22 @@
 import "jest";
 import axios from "axios";
+import del from "del";
 import WatcherServer from "../WatcherServer";
 import FileHelper from "../helpers/FileHelper";
 import { ReportType } from "../helpers/ReportManager";
 
 describe("Basic API tests", () => {
-  test("Basic single client connection", async done => {
+  test("Basic single client connection", async () => {
     const server = new WatcherServer();
     const fh = new FileHelper();
-    server.start(fh.uniqueDir);
+    await server.start(fh.uniqueDir);
     const allReportsUrl = `http://localhost:${server.getPort()}/api/reports`;
     const res = await axios.get(allReportsUrl);
     // Needs to be an empty array
     expect(res.data).toStrictEqual([]);
     await fh.cleanup();
-    server.stop(done);
+    await server.stop();
+    await del(server.dbh.dbFilePath, { force: true });
   });
 });
 
@@ -22,6 +24,8 @@ describe("Integration tests", () => {
   let server: WatcherServer;
   let fh: FileHelper;
   let connectionString: string;
+
+  jest.setTimeout(30000);
 
   /*
     Setup - Before each test, create a server, create and connect a new client
@@ -35,9 +39,10 @@ describe("Integration tests", () => {
     connectionString = `http://localhost:${server.getPort()}`;
   });
 
-  afterEach(async done => {
+  afterEach(async () => {
     await fh.cleanup();
-    server.stop(done);
+    await server.stop();
+    await del(server.dbh.dbFilePath, { force: true });
   });
 
   test("Returns right number of reports", async () => {
@@ -79,5 +84,13 @@ describe("Integration tests", () => {
     expect(resAfter.data).toHaveLength(0);
   });
 
-  test("Adds the paths to the db properly", async () => {});
+  test("Adds the paths to the db properly with many files", async () => {
+    // Create 100 random files, request via API, check the DB
+    fh.createUniqueReportFiles(500);
+    const res = await axios.get(`${connectionString}/api/reports`);
+    expect(res.data).toHaveLength(500);
+
+    const fromDb = await server.dbh.getAllNames();
+    expect(fromDb).toHaveLength(500);
+  });
 });

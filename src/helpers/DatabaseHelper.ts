@@ -1,4 +1,5 @@
 import sqlite from "sqlite3";
+import uniqid from "uniqid";
 
 interface PathToName {
   path: string;
@@ -10,8 +11,9 @@ class DBHelper {
   dbFilePath;
   db: sqlite.Database;
 
-  constructor(filePath = "names.db") {
-    this.dbFilePath = filePath;
+  constructor() {
+    const isTest = process.env.NODE_ENV === "test" || process.env.NODE_ENV === "ci";
+    this.dbFilePath = isTest ? `./.${uniqid()}.db` : process.env.DB_FILE;
     this.db = new sqlite.Database(this.dbFilePath, err => {
       if (err) {
         console.error("Error connecting to the database", err);

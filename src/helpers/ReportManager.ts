@@ -40,24 +40,19 @@ class ReportManager {
     return Array.from(this.allReports.values()).filter(r => r.type === type);
   }
 
-  /**
-   * Adds to the database if it doesn't exist there already
-   * @param r
-   * @param dbh
-   */
-  verifyInDb(r: Report, dbh: DBHelper) {
-    dbh
-      .addName({ path: r.name, name: r.name })
-      .then(() => {})
-      .catch(e => {
-        console.error(e);
-      });
+  async verifyAllReportsToDb(dbh: DBHelper) {
+    const promises = [];
+    this.allReports.forEach(r => {
+      promises.push(dbh.addName({ path: r.name, name: r.name }));
+    });
+
+    await Promise.all(promises);
   }
 
   /**
    * Forces reading from the files, without relying on the file watcher
    */
-  forceReadFiles(dbh: DBHelper): void {
+  forceReadFiles() {
     const result = [];
     this.allReports = new Map();
 
@@ -78,7 +73,6 @@ class ReportManager {
     if (result) {
       result.forEach(r => {
         this.addToReportMap(ReportManager.convert(r));
-        this.verifyInDb(r, dbh);
       });
     }
   }

@@ -2,7 +2,7 @@ import sqlite from "sqlite3";
 import uniqid from "uniqid";
 
 interface PathToName {
-  path: string;
+  path?: string;
   name?: string;
   id?: number;
 }
@@ -65,8 +65,8 @@ class DBHelper {
         return;
       }
       return await this.runQuery(
-        `UPDATE names SET path = ?, name = ? WHERE id = ?;`,
-        [data.path, data.name, data.id]
+        `UPDATE names SET name = ? WHERE id = ?;`,
+        [data.name, data.id]
       );
     } catch (e) {
       console.error(`Failed to update a name`, e);

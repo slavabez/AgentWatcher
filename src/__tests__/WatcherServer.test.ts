@@ -86,11 +86,29 @@ describe("Integration tests", () => {
 
   test("Adds the paths to the db properly with many files", async () => {
     // Create 100 random files, request via API, check the DB
-    fh.createUniqueReportFiles(500);
+    fh.createUniqueReportFiles(100);
     const res = await axios.get(`${connectionString}/api/reports`);
-    expect(res.data).toHaveLength(500);
+    expect(res.data).toHaveLength(100);
 
     const fromDb = await server.dbh.getAllNames();
-    expect(fromDb).toHaveLength(500);
+    expect(fromDb).toHaveLength(100);
+
+    const fromApi = await axios.get(`${connectionString}/api/names`);
+    expect(fromApi.data).toHaveLength(100);
+  });
+
+  test("Add a random file, update name", async () => {
+    fh.createUniqueReportFiles(2);
+    await axios.get(`${connectionString}/api/reports`);
+    const names = await axios.get(`${connectionString}/api/names`);
+    expect(names.data).toHaveLength(2);
+
+    const newNames = ["Name 1", "Name 2"];
+    const updated = await axios.put(
+      `${connectionString}/api/names/${names.data[0].id}`,
+      { name: newNames[0] }
+    );
+
+    expect(updated.data).toEqual({ id: names[0].id, path: names[0].path, name: newNames[0] });
   });
 });

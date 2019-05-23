@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
+const API_PATH = ``;
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;

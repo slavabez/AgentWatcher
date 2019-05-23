@@ -20,14 +20,19 @@ class WatcherServer {
     this.server = createServer(this.app);
     this.dbh = new DBHelper();
 
+    // Reports
     this.app.get("/api/reports", this.handleGetAllReports);
-
     this.app.get("/api/reports/to", this.handleGetToReports);
-
     this.app.get("/api/reports/from", this.handleGetFromReports);
+
+    // Names
+    this.app.get("/api/names", this.handleGetAllNames);
+    this.app.put("/api/names/:id", this.handleUpdateName);
 
     // Serve the static React site
     this.app.use(express.static(`html`));
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
 
     this.app.get("*", (req, res) =>
       res.sendFile(path.resolve("html", "index.html"))
@@ -97,6 +102,25 @@ class WatcherServer {
     const allFrom = this.rm.getReportByType(ReportType.From);
     await this.rm.verifyAllReportsToDb(this.dbh);
     res.send(allFrom);
+  };
+
+  handleGetAllNames = async (req: express.Request, res: express.Response) => {
+    const names = await this.dbh.getAllNames();
+    res.send(names);
+  };
+
+  handleGetNameById = async (req: express.Request, res: express.Response) => {
+    const id = req.query.id;
+    const name = await this.dbh.getNameById(id);
+    res.send(name);
+  };
+
+  handleUpdateName = async (req: express.Request, res: express.Response) => {
+    const id = req.query.id;
+    const { name } = req.body;
+    await this.dbh.updateName({ id, name });
+    const n = await this.dbh.getNameById(id);
+    res.send(n);
   };
 }
 

@@ -70,22 +70,26 @@ class WatcherServer {
   }
 
   handleGetAllReports = (req: express.Request, res: express.Response) => {
-    this.rm.forceReadFiles();
+    this.rm.forceReadFiles(this.dbh);
     const all = Array.from(this.rm.allReports.values());
     res.send(all);
   };
 
   handleGetToReports = (req: express.Request, res: express.Response) => {
-    this.rm.forceReadFiles();
+    this.rm.forceReadFiles(this.dbh);
     const allTo = this.rm.getReportByType(ReportType.To);
     res.send(allTo);
   };
 
   handleGetFromReports = (req: express.Request, res: express.Response) => {
-    this.rm.forceReadFiles();
+    this.rm.forceReadFiles(this.dbh);
     const allFrom = this.rm.getReportByType(ReportType.From);
     res.send(allFrom);
   };
+
+
+
+
 }
 
 export default WatcherServer;

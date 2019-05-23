@@ -27,15 +27,13 @@ describe(`Functional tests for CRUD operations`, () => {
     expect(result2).toBe(2);
   });
 
-  test("Inserting with non-unique path fails", async () => {
-    expect.assertions(2);
+  test("Inserting with non-unique is ignored", async () => {
     const result = await dbh.addName({ path: "path", name: "Игра" });
     expect(result).toBe(1);
 
-    const duplicateQuery = dbh.addName({ path: "path", name: "Имя 2" });
-    await expect(duplicateQuery).rejects.toEqual(
-      new Error("Failed to add name. Make sure the path is unique")
-    );
+    await dbh.addName({ path: "path", name: "Имя 2" });
+    const all = await dbh.getAllNames();
+    expect(all).toHaveLength(1);
   });
 
   test("GetAll works", async () => {
@@ -90,5 +88,24 @@ describe(`Functional tests for CRUD operations`, () => {
       path: "path3",
       name: "Игра3"
     });
+  });
+
+  test("Add Bulk paths works", async () => {
+    const paths = ["path1", "path2", "path3", "path4", "path5", "path6"];
+    await dbh.addBulkPaths(paths);
+
+    const all = await dbh.getAllNames();
+    expect(all).toHaveLength(paths.length);
+    // Name should be same as path
+    expect(all[3].name).toBe(all[3].path);
+  });
+
+  test("Add bulk doesn't crash when duplicates are added, skips duplicates", async () => {
+    const paths = ["path1", "path2", "path2", "path1", "path5", "path6"];
+    await dbh.addBulkPaths(paths);
+
+    const all = await dbh.getAllNames();
+    // Should only have 4 items
+    expect(all).toHaveLength(4);
   });
 });

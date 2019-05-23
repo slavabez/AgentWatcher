@@ -2,7 +2,7 @@ import "jest";
 import axios from "axios";
 import WatcherServer from "../WatcherServer";
 import FileHelper from "../helpers/FileHelper";
-import {ReportType} from "../helpers/ReportManager";
+import { ReportType } from "../helpers/ReportManager";
 
 describe("Basic API tests", () => {
   test("Basic single client connection", async done => {
@@ -28,10 +28,10 @@ describe("Integration tests", () => {
     After all tests - disconnect the client, stop the server
    */
 
-  beforeEach(() => {
+  beforeEach(async () => {
     server = new WatcherServer();
     fh = new FileHelper();
-    server.start(fh.uniqueDir);
+    await server.start(fh.uniqueDir);
     connectionString = `http://localhost:${server.getPort()}`;
   });
 
@@ -78,4 +78,6 @@ describe("Integration tests", () => {
     const resAfter = await axios.get(`${connectionString}/api/reports`);
     expect(resAfter.data).toHaveLength(0);
   });
+
+  test("Adds the paths to the db properly", async () => {});
 });

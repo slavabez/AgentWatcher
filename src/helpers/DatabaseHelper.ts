@@ -53,9 +53,7 @@ class DBHelper {
         `INSERT INTO names (path, name) VALUES (?, ?);`,
         [data.path, data.name]
       );
-    } catch (e) {
-      throw new Error("Failed to add name. Make sure the path is unique");
-    }
+    } catch (e) {}
   }
 
   async updateName(data: PathToName) {
@@ -122,6 +120,17 @@ class DBHelper {
     } catch (e) {
       console.error(`Error getting specific name by path`, e);
     }
+  }
+
+  async addBulkPaths(paths: string[]) {
+    const promises = [];
+    paths.forEach(p => {
+      promises.push(this.addName({ path: p, name: p }));
+    });
+
+    await Promise.all(promises).catch(err => {
+      console.error(err);
+    });
   }
 
   stop() {

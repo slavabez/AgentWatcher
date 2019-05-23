@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import slash from "slash";
+import DBHelper from "./DatabaseHelper";
 
 export enum ReportType {
   From = 1,
@@ -40,9 +41,23 @@ class ReportManager {
   }
 
   /**
+   * Adds to the database if it doesn't exist there already
+   * @param r
+   * @param dbh
+   */
+  verifyInDb(r: Report, dbh: DBHelper) {
+    dbh
+      .addName({ path: r.name, name: r.name })
+      .then(() => {})
+      .catch(e => {
+        console.error(e);
+      });
+  }
+
+  /**
    * Forces reading from the files, without relying on the file watcher
    */
-  forceReadFiles(): void {
+  forceReadFiles(dbh: DBHelper): void {
     const result = [];
     this.allReports = new Map();
 
@@ -52,10 +67,9 @@ class ReportManager {
       const stat = fs.lstatSync(filepath);
       if (stat.isDirectory()) {
         fs.readdirSync(filepath).forEach(f => {
-            const normalisedPath = slash(path.join(filepath, f));
-            files.push(normalisedPath);
-          }
-        );
+          const normalisedPath = slash(path.join(filepath, f));
+          files.push(normalisedPath);
+        });
       } else if (stat.isFile()) {
         result.push(filepath);
       }
@@ -64,6 +78,7 @@ class ReportManager {
     if (result) {
       result.forEach(r => {
         this.addToReportMap(ReportManager.convert(r));
+        this.verifyInDb(r, dbh);
       });
     }
   }
@@ -85,14 +100,14 @@ class ReportManager {
       const name = this.findName(rawName);
       const type = this.getType(rawType);
       const time = isDeleted ? null : fs.statSync(path).mtime;
-      return {name, type, time};
+      return { name, type, time };
     } else if (parts.length === 2) {
       // Regular, 2 parts (Name\From1C.zip)
       const [rawName, rawType] = parts;
       const name = this.findName(rawName);
       const type = this.getType(rawType);
       const time = isDeleted ? null : fs.statSync(path).mtime;
-      return {name, type, time};
+      return { name, type, time };
     } else {
       return {
         name: "Error",

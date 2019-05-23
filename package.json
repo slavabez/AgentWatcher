@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "debug": "node --inspect=5858 -r ts-node/register src/app.ts",
+    "dev": "ts-node src/app.ts",
     "start": "nodemon",
     "build:server": "yarn install && tsc",
     "build:client": "cd client && yarn install && yarn build",

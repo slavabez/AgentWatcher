@@ -38,15 +38,14 @@ class WatcherServer {
    * @param watchDir
    * @param port
    */
-  start(watchDir: string, port?: number): void {
+  async start(watchDir: string, port?: number) {
     this.server.listen(port, () => {
       if (process.env.NODE_ENV !== "test" && process.env.NODE_ENV !== "ci")
         console.log(`HTTP Server listening on port ${this.getPort()}`);
     });
     this.address = this.server.address();
-
-
     this.rm = new ReportManager(watchDir);
+    await this.dbh.initialiseTables();
   }
 
   /**

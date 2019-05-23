@@ -52,7 +52,7 @@ const dummySettings = {
 };
 
 const EditableRow = ({ id, path, name, update }) => {
-  const [isLoading, setLoading] = useState(false);
+  // const [isLoading, setLoading] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
   const [newName, setName] = useState(name);
 

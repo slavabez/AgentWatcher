@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Link, Router } from "@reach/router";
+import { Router } from "@reach/router";
 
 import Reports from "./components/ReportsSection";
 import DBSection from "./components/DBSection";

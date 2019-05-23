@@ -1,7 +1,30 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-const Wrapper = styled.div``;
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const Table = styled.table`
+  min-width: 80%;
+  text-align: center;
+
+  tr:nth-child(even) {
+    background-color: #ddd;
+  }
+`;
+
+const TableHead = styled.thead`
+  font-size: 1rem;
+
+  tr {
+    font-size: 1rem;
+    background-color: #ddd;
+    height: 3rem;
+  }
+`;
 
 const dummySettings = {
   names: [
@@ -28,58 +51,76 @@ const dummySettings = {
   ]
 };
 
-const EditableField = props => {
+const EditableRow = ({ id, path, name, update }) => {
+  const [isLoading, setLoading] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
-  const [newName, setNewName] = useState(props.name);
+  const [newName, setName] = useState(name);
 
-  const handleFinishedEdit = () => {
-    props.update(newName);
-    setEditMode(false);
-  };
-
-  if (isEditMode) {
-    return (
-      <form onSubmit={handleFinishedEdit}>
+  // The middle cell is either simple text or a small form
+  const renderName = !isEditMode ? (
+    <td>{name}</td>
+  ) : (
+    <td>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          update(id, newName);
+          setEditMode(false);
+        }}
+      >
         <input
           type="text"
           value={newName}
-          onChange={e => {
-            setNewName(e.target.value);
-          }}
+          onChange={e => setName(e.target.value)}
         />
       </form>
-    );
-  } else {
-    return (
-      <div>
-        {props.path} - {props.name} -{" "}
+    </td>
+  );
+  const buttonText = isEditMode ? "Сохранить" : "Изменить";
+
+  return (
+    <tr>
+      <td>{path}</td>
+      {renderName}
+      <td>
         <button
           onClick={() => {
-            setEditMode(true);
+            setEditMode(!isEditMode);
           }}
         >
-          Edit
+          {buttonText}
         </button>
-      </div>
-    );
-  }
+      </td>
+    </tr>
+  );
 };
 
 const DbSection = () => {
   return (
     <Wrapper>
       <h1>Настройки имен</h1>
-      {dummySettings.names.map(e => (
-        <EditableField
-          key={e.id}
-          id={e.id}
-          update={newName => {
-            console.log(`Called to edit ${e.id} with new ${newName}`);
-          }}
-          path={e.path}
-          name={e.name}
-        />
-      ))}
+      <Table>
+        <TableHead>
+          <tr>
+            <th>Папка</th>
+            <th>Имя</th>
+            <th>Изменить</th>
+          </tr>
+        </TableHead>
+        <tbody>
+          {dummySettings.names.map(n => (
+            <EditableRow
+              key={n.id}
+              id={n.id}
+              path={n.path}
+              name={n.name}
+              update={(id, newName) => {
+                console.log(`Submit id ${id}, new name ${newName}`);
+              }}
+            />
+          ))}
+        </tbody>
+      </Table>
     </Wrapper>
   );
 };

@@ -4,12 +4,12 @@ import { Link, Router } from "@reach/router";
 
 import Reports from "./components/ReportsSection";
 import DBSection from "./components/DBSection";
+import Sidebar from "./components/SideBar";
 
 const AppWrapper = styled.div`
   font-family: "Roboto", sans-serif;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 `;
 
@@ -20,18 +20,19 @@ const Header = styled.div`
   color: white;
   text-decoration: none;
 
-  a, h1 {
+  a,
+  h1 {
     color: white;
     text-decoration: none;
   }
 `;
 
-const SettingsButton = styled(Link)`
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: white;
-  text-decoration: none;
+const ContentWrap = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: auto;
 `;
 
 const StyledRouter = styled(Router)`
@@ -41,17 +42,16 @@ const StyledRouter = styled(Router)`
 function App() {
   return (
     <AppWrapper>
-      <Header>
-        <Link to="/">
-          <h1>Файлы обмена с Агент Плюс</h1>
-        </Link>
-
-        <SettingsButton to="/db">Настройки</SettingsButton>
-      </Header>
-      <StyledRouter>
-        <Reports path="/" />
-        <DBSection path="db" />
-      </StyledRouter>
+      <Sidebar />
+      <ContentWrap>
+        <Header>
+          <h1>Файлы обмена Агент Плюс</h1>
+        </Header>
+        <StyledRouter>
+          <Reports path="/" />
+          <DBSection path="db" />
+        </StyledRouter>
+      </ContentWrap>
     </AppWrapper>
   );
 }

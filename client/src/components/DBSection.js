@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
+import { sortIntoCategories } from "../helpers";
 
-const API_PATH = ``;
+const API_URL = `/api/names`;
 
 const Wrapper = styled.div`
   display: flex;
@@ -29,6 +30,13 @@ const TableHead = styled.thead`
   }
 `;
 
+const Input = styled.input`
+  width: 90%;
+  text-align: center;
+  font-size: 1rem;
+  font-family: "Roboto", sans-serif;
+`;
+
 const EditableRow = ({ id, path, name, update }) => {
   // const [isLoading, setLoading] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
@@ -46,7 +54,7 @@ const EditableRow = ({ id, path, name, update }) => {
           setEditMode(false);
         }}
       >
-        <input
+        <Input
           type="text"
           value={newName}
           onChange={e => setName(e.target.value)}
@@ -74,6 +82,17 @@ const EditableRow = ({ id, path, name, update }) => {
 };
 
 const DbSection = () => {
+  const [names, setNames] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const res = await axios.get(API_URL);
+    setNames(res.data);
+  };
+
   return (
     <Wrapper>
       <h1>Настройки имен</h1>
@@ -86,7 +105,7 @@ const DbSection = () => {
           </tr>
         </TableHead>
         <tbody>
-          {dummySettings.names.map(n => (
+          {names.map(n => (
             <EditableRow
               key={n.id}
               id={n.id}

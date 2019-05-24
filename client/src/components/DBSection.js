@@ -70,6 +70,7 @@ const EditableRow = ({ id, path, name }) => {
           type="text"
           value={newName}
           onChange={e => setName(e.target.value)}
+          autoFocus
         />
       </form>
     </td>

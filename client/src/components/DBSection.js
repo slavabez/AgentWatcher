@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { sortIntoCategories } from "../helpers";
 
 const API_URL = `/api/names`;
 
@@ -37,21 +36,34 @@ const Input = styled.input`
   font-family: "Roboto", sans-serif;
 `;
 
-const EditableRow = ({ id, path, name, update }) => {
-  // const [isLoading, setLoading] = useState(false);
+const EditableRow = ({ id, path, name }) => {
+  const [isLoading, setLoading] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
   const [newName, setName] = useState(name);
 
+  const updateName = async (id, newName) => {
+    setLoading(true);
+    const res = await axios.put(`${API_URL}/${id}`, { name: newName });
+    console.log(res);
+    if (res.status === 200) {
+      setName(res.data.name);
+      setEditMode(false);
+      setLoading(false);
+    } else {
+      console.log("Ошибка, попробуйте обновить страницу");
+      setLoading(false);
+    }
+  };
+
   // The middle cell is either simple text or a small form
   const renderName = !isEditMode ? (
-    <td>{name}</td>
+    <td>{newName}</td>
   ) : (
     <td>
       <form
         onSubmit={e => {
           e.preventDefault();
-          update(id, newName);
-          setEditMode(false);
+          updateName(id, newName);
         }}
       >
         <Input
@@ -62,7 +74,11 @@ const EditableRow = ({ id, path, name, update }) => {
       </form>
     </td>
   );
-  const buttonText = isEditMode ? "Сохранить" : "Изменить";
+  const buttonText = isLoading
+    ? "Загрузка..."
+    : isEditMode
+    ? "Отмена"
+    : "Изменить";
 
   return (
     <tr>
@@ -71,6 +87,7 @@ const EditableRow = ({ id, path, name, update }) => {
       <td>
         <button
           onClick={() => {
+
             setEditMode(!isEditMode);
           }}
         >
@@ -111,9 +128,6 @@ const DbSection = () => {
               id={n.id}
               path={n.path}
               name={n.name}
-              update={(id, newName) => {
-                console.log(`Submit id ${id}, new name ${newName}`);
-              }}
             />
           ))}
         </tbody>

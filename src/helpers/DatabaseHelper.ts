@@ -12,7 +12,8 @@ class DBHelper {
   db: sqlite.Database;
 
   constructor() {
-    const isTest = process.env.NODE_ENV === "test" || process.env.NODE_ENV === "ci";
+    const isTest =
+      process.env.NODE_ENV === "test" || process.env.NODE_ENV === "ci";
     this.dbFilePath = isTest ? `./.${uniqid()}.db` : process.env.DB_FILE;
     this.db = new sqlite.Database(this.dbFilePath, err => {
       if (err) {
@@ -64,10 +65,10 @@ class DBHelper {
         console.error("No ID of the name to update specified");
         return;
       }
-      return await this.runQuery(
-        `UPDATE names SET name = ? WHERE id = ?;`,
-        [data.name, data.id]
-      );
+      return await this.runQuery(`UPDATE names SET name = ? WHERE id = ?;`, [
+        data.name,
+        data.id
+      ]);
     } catch (e) {
       console.error(`Failed to update a name`, e);
     }
@@ -81,20 +82,23 @@ class DBHelper {
     }
   }
 
-  getAllNames() {
+  getAllNames(): Promise<PathToName[]> {
     try {
       return new Promise((resolve, reject) => {
-        this.db.all(`SELECT * FROM names`, (err, results) => {
-          if (err) reject(err);
-          resolve(results);
-        });
+        this.db.all(
+          `SELECT * FROM names ORDER BY path ASC;`,
+          (err, results) => {
+            if (err) reject(err);
+            resolve(results);
+          }
+        );
       });
     } catch (e) {
       console.error(`Failed to get all names`, e);
     }
   }
 
-  getNameById(id: number) {
+  getNameById(id: number): Promise<PathToName> {
     try {
       return new Promise((resolve, reject) => {
         this.db.get(`SELECT * FROM names WHERE id = ?`, [id], (err, res) => {
@@ -107,7 +111,7 @@ class DBHelper {
     }
   }
 
-  getNameByPath(path: string) {
+  getNameByPath(path: string): Promise<PathToName> {
     try {
       return new Promise((resolve, reject) => {
         this.db.get(

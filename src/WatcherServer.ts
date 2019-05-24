@@ -33,6 +33,7 @@ class WatcherServer {
     // Serve the static React site
     this.app.use(express.static(`html`));
 
+    // If no paths have been hit, serve the React page (React will take care of it)
     this.app.get("*", (req, res) =>
       res.sendFile(path.resolve("html", "index.html"))
     );
@@ -51,6 +52,7 @@ class WatcherServer {
     this.address = this.server.address();
     this.rm = new ReportManager(watchDir);
     await this.dbh.initialiseTables();
+    await this.rm.addNamesToDict(this.dbh);
   }
 
   /**
@@ -118,7 +120,10 @@ class WatcherServer {
     const id = req.params.id;
     const { name } = req.body;
     await this.dbh.updateName({ id, name });
+    // Write to the database
     const n = await this.dbh.getNameById(id);
+    // Update in the in-memory dictionary
+    this.rm.addNameToDict(n.path, n.name);
     res.send(n);
   };
 }

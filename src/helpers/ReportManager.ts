@@ -18,6 +18,7 @@ export interface Report {
 class ReportManager {
   public allReports: Map<string, Report>;
   public watchDir?: string;
+  public nameDict?: Map<string, string>;
 
   constructor(watchDir: string) {
     // Check that path specified is a directory
@@ -29,6 +30,7 @@ class ReportManager {
 
     this.watchDir = watchDir;
     this.allReports = new Map<string, Report>();
+    this.nameDict = new Map<string, string>();
   }
 
   addToReportMap(r: Report) {
@@ -47,6 +49,17 @@ class ReportManager {
     });
 
     await Promise.all(promises);
+  }
+
+  async addNamesToDict(dbh: DBHelper) {
+    const allNames = await dbh.getAllNames();
+    allNames.forEach(name => {
+      this.nameDict.set(name.path, name.name);
+    });
+  }
+
+  addNameToDict(path, name){
+    this.nameDict.set(path, name);
   }
 
   /**
@@ -72,7 +85,7 @@ class ReportManager {
 
     if (result) {
       result.forEach(r => {
-        this.addToReportMap(ReportManager.convert(r));
+        this.addToReportMap(this.convert(r));
       });
     }
   }
@@ -82,7 +95,7 @@ class ReportManager {
    * @param path - has to be the full path, including the /AgentPlus/ part.
    * @param isDeleted - if true, doesn't try to get 'last modified'. Use when you know the file no longer exists.
    */
-  static convert(path: string, isDeleted: boolean = false): Report {
+  convert(path: string, isDeleted: boolean = false): Report {
     // Remove all before and including AgentPlus\
     const cut = path.substring(path.indexOf("/AgentPlus/") + 11);
     // 'cut' should now be Name\From1C.zip or Name\1\From1C.zip
@@ -92,14 +105,14 @@ class ReportManager {
       const rawName = parts[0];
       const rawType = parts[2];
       const name = this.findName(rawName);
-      const type = this.getType(rawType);
+      const type = ReportManager.getType(rawType);
       const time = isDeleted ? null : fs.statSync(path).mtime;
       return { name, type, time };
     } else if (parts.length === 2) {
       // Regular, 2 parts (Name\From1C.zip)
       const [rawName, rawType] = parts;
       const name = this.findName(rawName);
-      const type = this.getType(rawType);
+      const type = ReportManager.getType(rawType);
       const time = isDeleted ? null : fs.statSync(path).mtime;
       return { name, type, time };
     } else {
@@ -111,8 +124,8 @@ class ReportManager {
     }
   }
 
-  static findName(name: string): string {
-    // TODO: implement persistent name storage
+  findName(name: string): string {
+    if (this.nameDict.has(name)) return this.nameDict.get(name);
     return name;
   }
 

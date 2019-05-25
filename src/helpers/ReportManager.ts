@@ -45,7 +45,7 @@ class ReportManager {
   async verifyAllReportsToDb(dbh: DBHelper) {
     const promises = [];
     this.allReports.forEach(r => {
-      promises.push(dbh.addName({ path: r.path, name: r.name }));
+      promises.push(dbh.addName(r));
     });
 
     await Promise.all(promises);

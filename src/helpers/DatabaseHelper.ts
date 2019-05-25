@@ -51,6 +51,8 @@ class DBHelper {
 
   async addName(data: PathToName) {
     try {
+      // If Path same as name, it's a duplicate
+      if (data.name === data.path) return;
       if (!data.name) data.name = data.path;
       return await this.runQuery(
         `INSERT INTO names (path, name) VALUES (?, ?);`,
@@ -111,12 +113,12 @@ class DBHelper {
     }
   }
 
-  getNameByPath(path: string): Promise<PathToName> {
+  getNameByName(name: string): Promise<PathToName> {
     try {
       return new Promise((resolve, reject) => {
         this.db.get(
-          `SELECT * FROM names WHERE path = ?`,
-          [path],
+          `SELECT * FROM names WHERE name = ?`,
+          [name],
           (err, res) => {
             if (err) reject(err);
             resolve(res);
@@ -124,7 +126,7 @@ class DBHelper {
         );
       });
     } catch (e) {
-      console.error(`Error getting specific name by path`, e);
+      console.error(`Error getting specific name by name`, e);
     }
   }
 

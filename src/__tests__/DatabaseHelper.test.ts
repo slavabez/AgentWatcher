@@ -82,7 +82,7 @@ describe(`Functional tests for CRUD operations`, () => {
     const id = await dbh.addName({ path: "path3", name: "Игра3" });
     await dbh.addName({ path: "path4", name: "Игра4" });
 
-    const n = await dbh.getNameByPath("path3");
+    const n = await dbh.getNameByName("path3");
     expect(n).toEqual({
       id: id,
       path: "path3",

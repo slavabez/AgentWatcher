@@ -33,6 +33,12 @@ const LargeIconWrap = styled.div`
     fill: ${p => (p.fill ? p.fill : "white")};
     stroke: ${p => (p.fill ? p.fill : "white")};
   }
+
+  @media (max-width: 600px) {
+    height: 30px;
+    width: 30px;
+    margin: 0.2rem 0;
+  }
 `;
 
 export const DownloadIcon = () => {

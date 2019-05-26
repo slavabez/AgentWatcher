@@ -13,6 +13,10 @@ const Wrapper = styled.div`
 
 const SidebarLink = styled(Link)`
   margin: 1rem 1rem 0;
+  
+  @media(max-width: 600px) {
+  margin: 0.25rem 0.25rem 0;
+  }
 `;
 
 const SideBar = () => {

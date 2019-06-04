@@ -50,10 +50,12 @@ class DBHelper {
   }
 
   async addName(data: PathToName) {
+    if (!data.name) return;
+    if (!data.path) {
+      data.path = data.name;
+      data.name = `НОВАЯ ПАПКА - ${data.name}`;
+    }
     try {
-      // If Path same as name, it's a duplicate
-      if (data.name === data.path) return;
-      if (!data.name) data.name = data.path;
       return await this.runQuery(
         `INSERT INTO names (path, name) VALUES (?, ?);`,
         [data.path, data.name]

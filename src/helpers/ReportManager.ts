@@ -42,9 +42,29 @@ class ReportManager {
     return Array.from(this.allReports.values()).filter(r => r.type === type);
   }
 
-  async verifyAllReportsToDb(dbh: DBHelper) {
+  /**
+   * Makes sure new paths are added to the DB
+   * @param dbh
+   */
+  async findAndAddNewPaths(dbh: DBHelper) {
+    /**
+     * Pseudo code:
+     * 1. Get all reports from the filesystem (dirRep)
+     * 2. Get all reports from DB (dbRep)
+     * 3. Iterate through dirRep paths, if there is a dbRep with same path, remove item from dirRep
+     *
+     */
+
+    const allReportsFromDir = ReportManager.readAllFiles(this.watchDir).map(p =>
+      this.convert(p)
+    );
+    const allReportsFromDb = await dbh.getAllNames();
+    const justPaths = allReportsFromDb.map(r => r.path);
+
+    const newReports = allReportsFromDir.filter(dirRep => !justPaths.includes(dirRep.name));
+
     const promises = [];
-    this.allReports.forEach(r => {
+    newReports.forEach(r => {
       promises.push(dbh.addName(r));
     });
 
@@ -58,7 +78,7 @@ class ReportManager {
     });
   }
 
-  addNameToDict(path, name){
+  addNameToDict(path, name) {
     this.nameDict.set(path, name);
   }
 
@@ -66,10 +86,20 @@ class ReportManager {
    * Forces reading from the files, without relying on the file watcher
    */
   forceReadFiles() {
-    const result = [];
     this.allReports = new Map();
 
-    const files = [this.watchDir];
+    const files = ReportManager.readAllFiles(this.watchDir);
+
+    if (files) {
+      files.forEach(r => {
+        this.addToReportMap(this.convert(r));
+      });
+    }
+  }
+
+  static readAllFiles(dirPath: string) {
+    const allFiles = [];
+    const files = [dirPath];
     do {
       const filepath = files.pop();
       const stat = fs.lstatSync(filepath);
@@ -79,25 +109,21 @@ class ReportManager {
           files.push(normalisedPath);
         });
       } else if (stat.isFile()) {
-        result.push(filepath);
+        allFiles.push(filepath);
       }
     } while (files.length !== 0);
 
-    if (result) {
-      result.forEach(r => {
-        this.addToReportMap(this.convert(r));
-      });
-    }
+    return allFiles;
   }
 
   /**
    * Converts file path to a digested object
-   * @param path - has to be the full path, including the /AgentPlus/ part.
+   * @param filePath - has to be the full path, including the /AgentPlus/ part.
    * @param isDeleted - if true, doesn't try to get 'last modified'. Use when you know the file no longer exists.
    */
-  convert(path: string, isDeleted: boolean = false): Report {
+  convert(filePath: string, isDeleted: boolean = false): Report {
     // Remove all before and including AgentPlus\
-    const cut = path.substring(path.indexOf("/AgentPlus/") + 11);
+    const cut = filePath.substring(filePath.indexOf("/AgentPlus/") + 11);
     // 'cut' should now be Name\From1C.zip or Name\1\From1C.zip
     const parts = cut.split("/");
     if (parts.length === 3) {
@@ -106,16 +132,17 @@ class ReportManager {
       const rawType = parts[2];
       const name = this.findName(rawName);
       const type = ReportManager.getType(rawType);
-      const time = isDeleted ? null : fs.statSync(path).mtime;
+      const time = isDeleted ? null : fs.statSync(filePath).mtime;
       return { name, type, time };
     } else if (parts.length === 2) {
       // Regular, 2 parts (Name\From1C.zip)
       const [rawName, rawType] = parts;
       const name = this.findName(rawName);
       const type = ReportManager.getType(rawType);
-      const time = isDeleted ? null : fs.statSync(path).mtime;
+      const time = isDeleted ? null : fs.statSync(filePath).mtime;
       return { name, type, time };
     } else {
+      console.error(`Error converting path ${filePath} to a valid object`);
       return {
         name: "Error",
         type: ReportType.Unknown,

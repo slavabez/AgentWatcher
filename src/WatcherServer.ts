@@ -29,6 +29,7 @@ class WatcherServer {
     // Names
     this.app.get("/api/names", this.handleGetAllNames);
     this.app.put("/api/names/:id", this.handleUpdateName);
+    this.app.delete("/api/names/:id", this.handleDeleteName);
 
     // Serve the static React site
     this.app.use(express.static(`html`));
@@ -53,6 +54,7 @@ class WatcherServer {
     this.rm = new ReportManager(watchDir);
     await this.dbh.initialiseTables();
     await this.rm.addNamesToDict(this.dbh);
+    await this.rm.findAndAddNewPaths(this.dbh);
   }
 
   /**
@@ -84,14 +86,14 @@ class WatcherServer {
   handleGetAllReports = async (req: express.Request, res: express.Response) => {
     this.rm.forceReadFiles();
     const all = Array.from(this.rm.allReports.values());
-    await this.rm.verifyAllReportsToDb(this.dbh);
+    await this.rm.findAndAddNewPaths(this.dbh);
     res.send(all);
   };
 
   handleGetToReports = async (req: express.Request, res: express.Response) => {
     this.rm.forceReadFiles();
     const allTo = this.rm.getReportByType(ReportType.To);
-    await this.rm.verifyAllReportsToDb(this.dbh);
+    await this.rm.findAndAddNewPaths(this.dbh);
     res.send(allTo);
   };
 
@@ -101,19 +103,13 @@ class WatcherServer {
   ) => {
     this.rm.forceReadFiles();
     const allFrom = this.rm.getReportByType(ReportType.From);
-    await this.rm.verifyAllReportsToDb(this.dbh);
+    await this.rm.findAndAddNewPaths(this.dbh);
     res.send(allFrom);
   };
 
   handleGetAllNames = async (req: express.Request, res: express.Response) => {
     const names = await this.dbh.getAllNames();
     res.send(names);
-  };
-
-  handleGetNameById = async (req: express.Request, res: express.Response) => {
-    const id = req.params.id;
-    const name = await this.dbh.getNameById(id);
-    res.send(name);
   };
 
   handleUpdateName = async (req: express.Request, res: express.Response) => {
@@ -125,6 +121,18 @@ class WatcherServer {
     // Update in the in-memory dictionary
     this.rm.addNameToDict(n.path, n.name);
     res.send(n);
+  };
+
+  handleDeleteName = async (req: express.Request, res: express.Response) => {
+    const id = req.params.id;
+    try {
+      await this.dbh.deleteName(id);
+      res.status(200);
+      res.send();
+    } catch (e) {
+      res.status(500);
+      res.send();
+    }
   };
 }
 

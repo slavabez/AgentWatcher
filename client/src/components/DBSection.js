@@ -55,6 +55,20 @@ const EditableRow = ({ id, path, name }) => {
     }
   };
 
+  const deleteName = async (id) => {
+    setLoading(true);
+    const res = await axios.delete(`${API_URL}/${id}`);
+    console.log(`Deleting, response`, res);
+    if (res.status === 200) {
+      setLoading(false);
+      setName("Удалено");
+      setEditMode(false);
+    } else {
+      console.error("Ошибка, попробуйте обновить страницу");
+      setLoading(false);
+    }
+  };
+
   // The middle cell is either simple text or a small form
   const renderName = !isEditMode ? (
     <td>{newName}</td>
@@ -94,6 +108,7 @@ const EditableRow = ({ id, path, name }) => {
         >
           {buttonText}
         </button>
+        <button onClick={() => { deleteName(id) }}>Удалить</button>
       </td>
     </tr>
   );

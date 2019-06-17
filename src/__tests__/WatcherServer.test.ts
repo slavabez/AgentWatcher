@@ -53,20 +53,20 @@ describe("Integration tests", () => {
 
   test("Returns a single report fine", async () => {
     fh.createReportFile({
-      name: "SimonPegg",
+      path: "SimonPegg",
       time: new Date(),
       type: ReportType.To
     });
 
     const res = await axios.get(`${connectionString}/api/reports`);
     expect(res.data).toHaveLength(1);
-    expect(res.data[0].name).toBe("SimonPegg");
+    expect(res.data[0].path).toBe("SimonPegg");
     expect(res.data[0].type).toBe(ReportType.To);
   });
 
   test("Handles file deletes properly", async () => {
     const dummyReport = {
-      name: "SimonPegg",
+      path: "SimonPegg",
       time: new Date(),
       type: ReportType.To
     };
@@ -75,7 +75,7 @@ describe("Integration tests", () => {
 
     const resBefore = await axios.get(`${connectionString}/api/reports`);
     expect(resBefore.data).toHaveLength(1);
-    expect(resBefore.data[0].name).toBe("SimonPegg");
+    expect(resBefore.data[0].path).toBe("SimonPegg");
     expect(resBefore.data[0].type).toBe(ReportType.To);
 
     fh.deleteFileForReport(dummyReport);

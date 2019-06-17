@@ -53,7 +53,7 @@ class DBHelper {
     if (!data.name) return;
     if (!data.path) {
       data.path = data.name;
-      data.name = `НОВАЯ ПАПКА - ${data.name}`;
+      data.name = `НОВАЯ ПАПКА`;
     }
     try {
       return await this.runQuery(

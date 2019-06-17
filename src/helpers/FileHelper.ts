@@ -29,8 +29,8 @@ export default class FileHelper {
 
   createUniqueReportFiles(n: number) {
     for (let i = 0; i < n; i++) {
-      let type: boolean | ReportType = !!Math.round(Math.random());
-      type = type ? ReportType.To : ReportType.From;
+      const coinToss = !!Math.round(Math.random());
+      const type = coinToss ? ReportType.To : ReportType.From;
       this.createReportFile(FileHelper.createUniqueRandomReport(type));
     }
   }
@@ -41,27 +41,27 @@ export default class FileHelper {
    */
   createReportFile(r: Report) {
     const fileName = r.type === ReportType.To ? "To1C.zip" : "From1C.zip";
-    fs.mkdirSync(`${this.uniqueDir}${r.name}`);
-    fs.writeFileSync(`${this.uniqueDir}${r.name}/${fileName}`, "Lol");
+    fs.mkdirSync(`${this.uniqueDir}${r.path}`);
+    fs.writeFileSync(`${this.uniqueDir}${r.path}/${fileName}`, "Lol");
   }
 
   async cleanup() {
     await del(`./.${this.prefix}`, { force: true });
   }
 
-  static createRandomReport(type: ReportType = ReportType.To): Report {
+  static createRandomReport(type = ReportType.To): Report {
     const someTimeAgo = Date.now() - 60 * 1000 * 60 * Math.random();
     return {
-      name: faker.name.lastName().replace(" ", ""),
+      path: faker.name.lastName().replace(" ", ""),
       type,
       time: new Date(someTimeAgo)
     };
   }
 
-  static createUniqueRandomReport(type: ReportType = ReportType.To): Report {
+  static createUniqueRandomReport(type = ReportType.To): Report {
     const someTimeAgo = Date.now() - 60 * 1000 * 60 * Math.random();
     return {
-      name: uniqid(),
+      path: uniqid(),
       type,
       time: new Date(someTimeAgo)
     };
@@ -69,7 +69,7 @@ export default class FileHelper {
 
   deleteFileForReport(r: Report) {
     const fileName = r.type === ReportType.To ? "To1C.zip" : "From1C.zip";
-    const path = `${this.uniqueDir}${r.name}/${fileName}`;
+    const path = `${this.uniqueDir}${r.path}/${fileName}`;
     try {
       fs.unlinkSync(path);
     } catch (e) {

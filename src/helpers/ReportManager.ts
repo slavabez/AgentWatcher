@@ -10,7 +10,8 @@ export enum ReportType {
 }
 
 export interface Report {
-  name: string;
+  path: string;
+  name?: string;
   type: ReportType;
   time: Date | null;
 }
@@ -34,7 +35,7 @@ class ReportManager {
   }
 
   addToReportMap(r: Report) {
-    this.allReports.set(`${r.name}-${r.type}`, r);
+    this.allReports.set(`${r.path}-${r.type}`, r);
   }
 
   getReportByType(type: ReportType) {
@@ -61,7 +62,9 @@ class ReportManager {
     const allReportsFromDb = await dbh.getAllNames();
     const justPaths = allReportsFromDb.map(r => r.path);
 
-    const newReports = allReportsFromDir.filter(dirRep => !justPaths.includes(dirRep.name));
+    const newReports = allReportsFromDir.filter(
+      dirRep => !justPaths.includes(dirRep.path)
+    );
 
     const promises = [];
     newReports.forEach(r => {
@@ -128,23 +131,23 @@ class ReportManager {
     const parts = cut.split("/");
     if (parts.length === 3) {
       // 3 parts (Name\1\From1C.zip)
-      const rawName = parts[0];
+      const rawPath = parts[0];
       const rawType = parts[2];
-      const name = this.findName(rawName);
+      const name = this.findName(rawPath);
       const type = ReportManager.getType(rawType);
       const time = isDeleted ? null : fs.statSync(filePath).mtime;
-      return { name, type, time };
+      return { path: rawPath, name, type, time };
     } else if (parts.length === 2) {
       // Regular, 2 parts (Name\From1C.zip)
-      const [rawName, rawType] = parts;
-      const name = this.findName(rawName);
+      const [rawPath, rawType] = parts;
+      const name = this.findName(rawPath);
       const type = ReportManager.getType(rawType);
       const time = isDeleted ? null : fs.statSync(filePath).mtime;
-      return { name, type, time };
+      return { path: rawPath, name, type, time };
     } else {
       console.error(`Error converting path ${filePath} to a valid object`);
       return {
-        name: "Error",
+        path: "Error",
         type: ReportType.Unknown,
         time: new Date()
       };

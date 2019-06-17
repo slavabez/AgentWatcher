@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    name: 'AgentPlus Watcher',
+    name: 'agw',
     script: 'dist/app.js',
     instances: 1,
     autorestart: true,

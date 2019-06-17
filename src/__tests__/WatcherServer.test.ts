@@ -110,4 +110,53 @@ describe("Integration tests", () => {
 
     expect(updated.data).toEqual({ id: names.data[0].id, path: names.data[0].path, name: "New Name" });
   });
+
+  test("Can add a file, assign name, read it, then delete it", async () => {
+    // Create a dummy report, read, make sure that works
+    const dummy = {
+      path: "./Imasneakypath/",
+      time: new Date(),
+      type: ReportType.To
+    };
+
+    fh.createReportFile(dummy);
+
+    const initialRes = await axios.get(`${connectionString}/api/reports`);
+    expect(initialRes.data).toHaveLength(1);
+    expect(initialRes.data[0].path).toBe("Imasneakypath");
+    expect(initialRes.data[0].type).toBe(ReportType.To);
+
+    // Make sure a name has been created automatically in teh DB
+    const names = await axios.get(`${connectionString}/api/names`);
+    expect(names.data).toHaveLength(1);
+    expect(names.data[0].id).not.toBeNaN();
+    expect(names.data[0]).toHaveProperty(`name`);
+    expect(names.data[0]).toHaveProperty(`path`);
+
+    // Use the API to assign a name to this path, read, double check it's name has been set
+    const nameId = names.data[0].id;
+    const reqBody = {
+      name: "I'm a sneaky path"
+    };
+    const updateReq = await axios.put(`${connectionString}/api/names/${nameId}`, reqBody);
+    expect(updateReq.status).toBe(200);
+    expect(updateReq.data).toHaveProperty("name");
+    expect(updateReq.data.name).toBe("I'm a sneaky path");
+
+    const secondGetReq = await axios.get(`${connectionString}/api/names/`);
+    expect(secondGetReq.status).toBe(200);
+    expect(secondGetReq.data).toHaveLength(1);
+    expect(secondGetReq.data[0]).toHaveProperty("name");
+    expect(secondGetReq.data[0].name).toBe("I'm a sneaky path");
+    expect(secondGetReq.data[0].path).toBe("Imasneakypath");
+
+    // Delete the name using the API, double check it's gone
+    const delReq = await axios.delete(`${connectionString}/api/names/${nameId}`);
+    expect(delReq.status).toBe(200);
+
+    const finalReq = await axios.get(`${connectionString}/api/names`);
+    expect(finalReq.status).toBe(200);
+    expect(finalReq.data).toHaveLength(0);
+
+  });
 });

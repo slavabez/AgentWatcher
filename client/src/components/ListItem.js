@@ -38,10 +38,9 @@ const ListItem = props => {
     <Wrapper>
       <LeftSide>
         {icon}
-
-        <p>{props.name}</p>
+        <p title={props.path}>{props.name}</p>
       </LeftSide>
-      <Time>{timeSince}</Time>
+      <Time title={props.time}>{timeSince}</Time>
     </Wrapper>
   );
 };

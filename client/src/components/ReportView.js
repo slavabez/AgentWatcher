@@ -52,6 +52,7 @@ const ReportView = ({ sales, stocks, isLoading }) => {
     salesSorted.map(r => (
       <ListItem
         key={`${r.name}-${r.time}-${r.type}`}
+        path={r.path}
         name={r.name}
         time={r.time}
         type={r.type}
@@ -66,6 +67,7 @@ const ReportView = ({ sales, stocks, isLoading }) => {
       <ListItem
         key={`${r.name}-${r.time}-${r.type}`}
         name={r.name}
+        path={r.path}
         time={r.time}
         type={r.type}
       />

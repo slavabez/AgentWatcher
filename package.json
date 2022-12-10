@@ -39,7 +39,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^8.0.0",
-    "express": "^4.17.0",
+    "express": "^4.17.3",
     "slash": "^3.0.0",
     "sqlite3": "^4.0.8"
   },
